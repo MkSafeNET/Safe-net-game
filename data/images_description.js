@@ -1,5 +1,8 @@
+import {GAME_LANGUAGES} from "./languages.js";
 
-const images_description={
+const images_description = {};
+
+images_description[GAME_LANGUAGES.ENGLISH_LANGUAGE] = {
     good1_final: "A person is logging into an account on a smartphone while a two-factor authentication code is sent to a second device",
     good2_final: "A laptop displays a digital password manager interface designed to store and organize multiple encrypted login credentials",
     good3_final: "A login page requests an activation code and login credentials for the user Aleksandar",
@@ -43,5 +46,93 @@ const images_description={
     bad19_final: "A user is clicking 'Cancel' button on a critical system update notification",
     bad20_final: "A user is sharing a photo of a government ID card with his friend Alex",
 }
+
+images_description[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = {
+    good1_final: "Лице се најавува на профил преку паметен телефон додека код за двофакторска автентикација се испраќа на втор уред",
+    good2_final: "Лаптоп прикажува интерфејс на дигитален менаџер за лозинки наменет за чување и организирање повеќе шифрирани податоци за најава",
+    good3_final: "Страница за најава бара активациски код и податоци за најава за корисникот Александар",
+    good4_final: "Екран за инсталација на Windows ажурирање кој покажува дека процесот е завршен 45%",
+    good5_final: "Апликација „Secure VPN“ што прикажува поврзана и енкриптирана состојба со опција за исклучување",
+    good6_final: "Пријавување е-маил од „support@paypal-verify.com“ со итна порака за добивање бесплатен подарок и линк",
+    good7_final: "Барање за системски дозволи од апликацијата Instagram за пристап до контактите и локацијата на уредот, со избрана опција „Одбиј“",
+    good8_final: "Бришење барање за пријателство на социјална мрежа од непознат „Alex J.“ со три заеднички пријатели",
+    good9_final: "Корисник одбива отворена и небезбедна мрежа со име „CoffeeShop_Free_WiFi“ со клик на копчето Откажи на безбедносно предупредување",
+    good10_final: "Пристап до онлајн банкарски портал преку прелистувач што го прикажува HTTPS префиксот по проверка на точниот домен",
+    good11_final: "Креирање нов е-маил профил во десктоп прелистувач со долга и сложена лозинка",
+    good12_final: "Корисник користи една лозинка за социјални мрежи и различна лозинка за онлајн банкарство",
+    good13_final: "Не се споделуваат телефонски броеви, домашни адреси или училишни информации јавно",
+    good14_final: "Активирање и на антивирусниот софтвер и на заштитниот ѕид (firewall)",
+    good15_final: "Оставање на профилите на социјалните мрежи приватни",
+    good16_final: "Корисник клика на „Рестартирај и ажурирај сега“ на известување за критично системско ажурирање",
+    good17_final: "Девојче клика на копчето „Пријави“ додека гледа агресивни и навредливи пораки од анонимен насилник на својот телефон",
+    good18_final: "Проверка дали веб-страница е легитимна пред интеракција со неа",
+    good19_final: "Блокирање корисник по добивање несоодветни пораки од него",
+    good20_final: "Креирање резервни копии од важни датотеки за да се обезбеди враќање на податоци при хардверски дефект или случајно бришење",
+
+    bad1_final: "Интерфејс на социјална мрежа што го поттикнува корисникот јавно да сподели објава",
+    bad2_final: "Е-маил кој тврди дека профилот е суспендиран и го повикува примачот да кликне на линк „ПОТВРДИ СЕГА“",
+    bad3_final: "Петар го прашува примачот дали фотографијата на дадениот линк е од него",
+    bad4_final: "Веб-формулар што го поканува корисникот да реши персонализиран квиз преку скратен линк",
+    bad5_final: "Корисник се поврзува на отворена и небезбедна мрежа со име „CoffeeShop_Free_WiFi“ со предупредување дека може да биде небезбедна",
+    bad6_final: "Посета на линк преку известување кое предупредува дека е откриен сомнителен линк",
+    bad7_final: "Дозволување апликацијата „FotoFunApp“ да има пристап до контактите и локацијата на уредот",
+    bad8_final: "Е-маил од „Your Mailchimp Account“ што предупредува за сомнителна најава и бара реактивација на профилот со клик на линк",
+    bad9_final: "Кликање на синото копче „Погледни детали за нарачката“ во известување „Ажурирање на нарачка“ без проверка на испраќачот или бројот на нарачка",
+    bad10_final: "Прифаќање барање за пријателство на социјална мрежа од непозната „Emilia K.“ со два заеднички пријатели",
+    bad11_final: "Девојче клика на линк во порака што гласи: „Ми требаат 5.000 $, префрли ми веднаш.“",
+    bad12_final: "Корисник притиска копче „Исклучи двофакторска автентикација“ на екран од паметен телефон што прикажува известување „Профилот е компромитиран“",
+    bad13_final: "Внесување „admin“ и како корисничко име и како лозинка на екранот за најава",
+    bad14_final: "Прелистување јавен форум преку прелистувач што прикажува неенкриптиран HTTP префикс",
+    bad15_final: "Преземање софтвер од неенкриптирана веб-страница преку прелистувач со видлив HTTP префикс",
+    bad16_final: "Корисник ја споделува својата лозинка со пријател",
+    bad17_final: "Заборавање да се одјави од компјутери во училиште, библиотека или кафуле",
+    bad18_final: "Објавување каде се наоѓаш додека сè уште си таму",
+    bad19_final: "Корисник клика на копчето „Откажи“ на известување за критично системско ажурирање",
+    bad20_final: "Корисник споделува фотографија од лична идентификациска картичка со својот пријател Алекс"
+};
+
+images_description[GAME_LANGUAGES.ALBANIAN_LANGUAGE] = {
+    good1_final: "Një person po hyn në një llogari përmes një telefoni inteligjent ndërsa një kod i autentifikimit me dy faktorë dërgohet në një pajisje të dytë",
+    good2_final: "Një laptop shfaq një ndërfaqe të menaxherit digjital të fjalëkalimeve, e dizajnuar për ruajtjen dhe organizimin e shumë kredencialeve të enkriptuara të hyrjes",
+    good3_final: "Faqja e hyrjes kërkon një kod aktivizimi dhe të dhëna hyrjeje për përdoruesin Aleksandar",
+    good4_final: "Ekran i instalimit të përditësimit të Windows që tregon se procesi ka përfunduar 45%",
+    good5_final: "Aplikacioni “Secure VPN” që tregon një gjendje të lidhur dhe të enkriptuar me opsion për shkëputje",
+    good6_final: "Raportim i një emaili nga “support@paypal-verify.com” me një mesazh urgjent për të përfituar një dhuratë falas dhe një link",
+    good7_final: "Kërkesë për leje sistemi nga aplikacioni Instagram për qasje në kontaktet dhe vendndodhjen e pajisjes, me opsionin “Moho” të zgjedhur",
+    good8_final: "Fshirje e një kërkese miqësie në rrjete sociale nga i panjohuri “Alex J.” me tre miq të përbashkët",
+    good9_final: "Përdoruesi refuzon një rrjet të hapur dhe të pasigurt me emrin “CoffeeShop_Free_WiFi” duke klikuar butonin Anulo në paralajmërimin e sigurisë",
+    good10_final: "Qasje në portalin e bankës online përmes një shfletuesi që shfaq prefiksin HTTPS pas kontrollimit të domenit të saktë",
+    good11_final: "Krijimi i një llogarie të re emaili në një shfletues desktopi duke përdorur një fjalëkalim të gjatë dhe kompleks",
+    good12_final: "Përdoruesi përdor një fjalëkalim për rrjetet sociale dhe një tjetër fjalëkalim për bankim online",
+    good13_final: "Mosndarja publike e numrave të telefonit, adresave të shtëpisë ose të dhënave të shkollës",
+    good14_final: "Aktivizimi i softuerit antivirus dhe i murit mbrojtës (firewall)",
+    good15_final: "Mbajtja private e llogarive në rrjetet sociale",
+    good16_final: "Përdoruesi klikon “Rinis dhe përditëso tani” në një njoftim për përditësim kritik të sistemit",
+    good17_final: "Një vajzë klikon butonin “Raporto” ndërsa shikon mesazhe agresive dhe fyese nga një ngacmues anonim në telefonin e saj",
+    good18_final: "Verifikimi nëse një faqe interneti është legjitime para se të ndërveprohet me të",
+    good19_final: "Bllokimi i një përdoruesi pas marrjes së mesazheve të papërshtatshme prej tij",
+    good20_final: "Krijimi i kopjeve rezervë të skedarëve të rëndësishëm për të siguruar rikuperimin e të dhënave në rast defekti harduerik ose fshirjeje aksidentale",
+
+    bad1_final: "Ndërfaqe e një rrjeti social që nxit përdoruesin të ndajë një postim publikisht",
+    bad2_final: "Email që pretendon se llogaria është pezulluar dhe i kërkon marrësit të klikojë një link “VERIFIKO TANI”",
+    bad3_final: "Petri e pyet marrësin nëse fotografia në linkun e dhënë është e tij",
+    bad4_final: "Formular në internet që fton përdoruesin të plotësojë një kuiz të personalizuar përmes një linku të shkurtuar",
+    bad5_final: "Përdoruesi lidhet me një rrjet të hapur dhe të pasigurt me emrin “CoffeeShop_Free_WiFi” me paralajmërim se mund të jetë i pasigurt",
+    bad6_final: "Vizitë e një linku përmes një njoftimi që paralajmëron se është zbuluar një link i dyshimtë",
+    bad7_final: "Lejimi i aplikacionit “FotoFunApp” të ketë qasje në listën e kontakteve dhe në të dhënat e vendndodhjes së pajisjes",
+    bad8_final: "Email nga “Your Mailchimp Account” që paralajmëron për një hyrje të dyshimtë dhe kërkon riaktivizimin e llogarisë duke klikuar një link",
+    bad9_final: "Klikimi i butonit blu “Shiko detajet e porosisë” në një njoftim “Përditësim porosie” pa verifikuar dërguesin ose numrin e porosisë",
+    bad10_final: "Pranimi i një kërkese miqësie në rrjete sociale nga e panjohura “Emilia K.” me dy miq të përbashkët",
+    bad11_final: "Një vajzë klikon një link në një mesazh që thotë: “Më duhen 5.000 $, ma dërgo tani.”",
+    bad12_final: "Përdoruesi shtyp butonin “Çaktivizo autentifikimin me dy faktorë” në ekranin e një telefoni inteligjent që shfaq njoftimin “Llogaria është komprometuar”",
+    bad13_final: "Futja e “admin” si emër përdoruesi dhe si fjalëkalim në ekranin e hyrjes",
+    bad14_final: "Shfletimi i një forumi publik përmes një shfletuesi që shfaq prefiksin e paenkriptuar HTTP",
+    bad15_final: "Shkarkimi i softuerit nga një faqe e paenkriptuar përmes një shfletuesi me prefiks HTTP të dukshëm",
+    bad16_final: "Përdoruesi ndan fjalëkalimin e tij me një mik",
+    bad17_final: "Harrimi për të dalë nga llogaria në kompjuterë të shkollës, bibliotekës ose kafenesë",
+    bad18_final: "Publikimi i vendndodhjes ndërkohë që je ende aty",
+    bad19_final: "Përdoruesi klikon butonin “Anulo” në një njoftim për përditësim kritik të sistemit",
+    bad20_final: "Përdoruesi ndan një fotografi të një karte identiteti qeveritare me mikun e tij Alex"
+};
 
 export default images_description;

@@ -8,9 +8,12 @@
 import questions from "./data/questions.js"
 import images_description from "./data/images_description.js";
 import {WEAK_PASSWORDS} from "./data/weak_passwords.js"
+import {GAME_LANGUAGES} from "./data/languages.js";
+import {HELP_TEXT} from "./data/help_text.js";
 
 import {Game2D} from "./2d_game.js";
 import {resizeMiniGameCanvas} from "./resizeMiniGame.js";
+import {UI_TEXT} from "./data/ui_text.js";
 
 const startScreen = document.getElementById("start-screen")
 const startBtn = document.getElementById("start-btn")
@@ -45,6 +48,17 @@ const SYMBOLS = "!@#$%&*"
 const PASSWORDS_MODE = "passwords"
 const IMAGES_MODE = "images"
 
+const LANG_LIST = [
+    GAME_LANGUAGES.ENGLISH_LANGUAGE,
+    GAME_LANGUAGES.MACEDONIAN_LANGUAGE,
+    GAME_LANGUAGES.ALBANIAN_LANGUAGE
+]
+
+let langIndex = 1
+
+let CURRENT_GAME_LANGUAGE = LANG_LIST[langIndex]
+
+let langButtonArea = {}
 
 let mainRafId = null;
 
@@ -91,7 +105,7 @@ let restartButton = null
 
 let mouseData = null
 
-const bonusQuestions = questions
+let bonusQuestions = questions[CURRENT_GAME_LANGUAGE]
 
 // Arrays to hold the successfully loaded image objects
 const safeImages = []
@@ -101,7 +115,7 @@ const unsafeImages = []
 const MAX_IMAGES_TO_CHECK_GOOD = 20
 const MAX_IMAGES_TO_CHECK_BAD = 20
 
-const {game: game, canvas: canvas2D, ctx: ctx2D, StartMiniGame, isHappyEnd} = Game2D(endMiniGame)
+const {game: game, canvas: canvas2D, ctx: ctx2D, StartMiniGame} = Game2D(endMiniGame)
 
 const info = {
     x: canvas.width - 40,
@@ -109,31 +123,11 @@ const info = {
     radius: 18,
     open: false,
     visible: true,
-    text: `A password is SAFE if it meets ALL of 
-these rules:
-
-Length
-- At least 8 characters
-
-Character variety
-- Contains at least 3 of these 4 types:
-  Uppercase (A–Z)
-  Lowercase (a–z)
-  Number (0–9)
-  Special character (! @ # $ % & *)
-
-No common patterns
-- Does NOT contain: "1234", "password", 
-"qwerty", "admin"
-- No repeated characters like "aaaa"
-
-No personal info
-- Does NOT include: Name, Birth year, Username
-
-TIPS:
-- Numbers and special characters are in the color 
-  Green so that they can be noticed easily`
+    text: HELP_TEXT[CURRENT_GAME_LANGUAGE]
 }
+
+
+
 
 /**
  * TODO - Function Definition Logic Here
@@ -141,6 +135,18 @@ TIPS:
  * Од оваа линија надолу дефинирање на функции
  * */
 
+function cycleLanguage() {
+    langIndex = (langIndex + 1) % LANG_LIST.length;
+    // This is the variable your help text system relies on
+    CURRENT_GAME_LANGUAGE = LANG_LIST[langIndex];
+
+    bonusQuestions = questions[CURRENT_GAME_LANGUAGE]
+    info.text = HELP_TEXT[CURRENT_GAME_LANGUAGE]
+
+    safeImages.forEach(img => img.description = images_description[CURRENT_GAME_LANGUAGE][img.fileName])
+    unsafeImages.forEach(img => img.description = images_description[CURRENT_GAME_LANGUAGE][img.fileName])
+
+}
 
 //Function that loads images and stores them in the arrays as 'Image' objects
 function loadImage(src) {
@@ -155,7 +161,8 @@ function loadImage(src) {
             .pop()
             .replace(".jpg", "");
 
-        img.description = images_description[key];
+        img.fileName = key
+        img.description = images_description[CURRENT_GAME_LANGUAGE][key];
     });
 }
 
@@ -530,17 +537,20 @@ function draw() {
 
     if (gamePhase === RETRY_PROMPT_PHASE) {
         drawRetryPrompt(vWidth, vHeight, aspect_size)
+        drawLanguageToggle(vWidth, vHeight, aspect_size)
         return
     }
 
     if (gamePhase === FINAL_GAME_OVER_PHASE) {
         drawGameOver(vWidth, vHeight, aspect_size)
+        drawLanguageToggle(vWidth, vHeight, aspect_size)
         return
     }
 
     if (gamePhase === BONUS_ROUND_PHASE) {
         // console.log('draw() - (gamePhase === "bonusRound")')
         drawBonusRound(vWidth, vHeight, aspect_size)
+        drawLanguageToggle(vWidth, vHeight, aspect_size)
         return
     }
 
@@ -559,6 +569,8 @@ function draw() {
     if (blurred) {
         ctx.restore()
     }
+
+    drawLanguageToggle(vWidth, vHeight, aspect_size)
 
     drawInfoButton(vWidth, vHeight, aspect_size)
 }
@@ -637,13 +649,13 @@ function drawRetryPrompt(vWidth, vHeight, aspect_size) {
     ctx.shadowColor = "#facc15";
     ctx.fillStyle = "#facc15";
     ctx.font = `bold ${vWidth * 0.06}px monospace`; // Monospace font
-    ctx.fillText("CRITICAL SYSTEM FAILURE", vWidth / 2, vHeight * 0.3);
+    ctx.fillText(UI_TEXT.RETRY_SCREEN_HEADER_TEXT[CURRENT_GAME_LANGUAGE], vWidth / 2, vHeight * 0.3);
     ctx.restore();
 
     // 4. Sub-header text
     ctx.fillStyle = "#94a3b8";
     ctx.font = `${vWidth * 0.03}px monospace`;
-    ctx.fillText("> INITIALIZING RECOVERY OPTIONS...", vWidth / 2, vHeight * 0.4);
+    ctx.fillText(UI_TEXT.RETRY_SCREEN_SUBHEADER_TEXT[CURRENT_GAME_LANGUAGE], vWidth / 2, vHeight * 0.4);
 
     // Button sizing - making them wider for the long text
     const buttonW = vWidth * 0.35;
@@ -652,11 +664,11 @@ function drawRetryPrompt(vWidth, vHeight, aspect_size) {
 
 
     drawCyberButton(
-        "RECOVERY_PROTOCOL", vWidth / 2 - buttonW - button_spacing, vHeight * 0.56, buttonW, buttonH, true, aspect_size
+        UI_TEXT.RETRY_SCREEN_RECOVERY_BUTTON_TEXT[CURRENT_GAME_LANGUAGE], vWidth / 2 - buttonW - button_spacing, vHeight * 0.56, buttonW, buttonH, true, aspect_size
     );
 
     drawCyberButton(
-        "TERMINATE_REBOOT", vWidth / 2 + button_spacing, vHeight * 0.56, buttonW, buttonH, false, aspect_size
+        UI_TEXT.RETRY_SCREEN_TERMINATE_BUTTON_TEXT[CURRENT_GAME_LANGUAGE], vWidth / 2 + button_spacing, vHeight * 0.56, buttonW, buttonH, false, aspect_size
     );
 }
 
@@ -666,11 +678,10 @@ function drawCyberButton(text, x, y, w, h, primary, aspect_size) {
 
     let color
     let hover
-    if(mouseIsInside(x,y,w,h)){
+    if (mouseIsInside(x, y, w, h)) {
         color = primary ? "#22c55e" : "#ef4444";
         hover = true
-    }
-    else {
+    } else {
         color = primary ? "#10652e" : "#9a2a2a";
         hover = false
     }
@@ -733,16 +744,18 @@ function drawGameOver(vWidth, vHeight, aspect_size) {
     ctx.textBaseline = "middle";
 
 
+    // Game Over Header
     ctx.shadowBlur = 15 / aspect_size;
     ctx.shadowColor = "#ff0055"; // Hot pink neon glow
     ctx.fillStyle = "#ff0055";
-    ctx.fillText(`GAME OVER`, vWidth / 2, vHeight / 2 - (20 / aspect_size));
+    ctx.fillText(UI_TEXT.GAME_OVER_HEADER_TEXT[CURRENT_GAME_LANGUAGE], vWidth / 2, vHeight / 2 - (20 / aspect_size));
 
 
+    // Game Over SubHeader
     ctx.shadowBlur = 0;
     ctx.fillStyle = "#00f2ff";
     ctx.font = `bold ${Math.round(20 / aspect_size)}px "Courier New", monospace`;
-    ctx.fillText(`SYSTEM_RECOVERY: Score ${score}`, vWidth / 2, vHeight / 2 + (20 / aspect_size));
+    ctx.fillText(UI_TEXT.GAME_OVER_SUBHEADER_TEXT[CURRENT_GAME_LANGUAGE] + ` ${score}`, vWidth / 2, vHeight / 2 + (20 / aspect_size));
 
 
     const btnW = Math.max(200, vWidth / 4);
@@ -772,9 +785,7 @@ function drawGameOver(vWidth, vHeight, aspect_size) {
     ctx.closePath();
 
 
-
-
-    ctx.fillStyle = isHover ? "rgba(255,0,0,0.2)" :"rgba(197,34,34,0.2)";
+    ctx.fillStyle = isHover ? "rgba(255,0,0,0.2)" : "rgba(197,34,34,0.2)";
     ctx.fill();
     ctx.shadowBlur = 0
     ctx.strokeStyle = isHover ? "#ff0000" : "#c52222";
@@ -782,10 +793,10 @@ function drawGameOver(vWidth, vHeight, aspect_size) {
 
 
     ctx.stroke();
-    ctx.fillStyle = isHover ? "#ff0000": "#c52222";
+    ctx.fillStyle = isHover ? "#ff0000" : "#c52222";
     ctx.font = `bold ${Math.round(18 / aspect_size)}px "Courier New", monospace`;
 
-    ctx.fillText("REBOOT_SYSTEM", vWidth / 2, btnY + btnH / 2);
+    ctx.fillText(UI_TEXT.GAME_OVER_BUTTON_TEXT[CURRENT_GAME_LANGUAGE], vWidth / 2, btnY + btnH / 2);
     ctx.restore()
 }
 
@@ -912,14 +923,13 @@ function drawInfoButton(vWidth, vHeight, aspect_size) {
 
     let strokeStyle
     let shadowColor
-    if(mouseIsInsideCircle(info.x,info.y,info.radius)){
+    if (mouseIsInsideCircle(info.x, info.y, info.radius)) {
         strokeStyle = info.open ? "#ff0000" : "#00f2ff"
         shadowColor = info.open ? "#ff0000" : "#00f2ff"
-    }else {
+    } else {
         strokeStyle = info.open ? "#8e0000" : "#1e293b"
         shadowColor = info.open ? "#8e0000" : "#00f2ff"
     }
-
 
 
     ctx.strokeStyle = strokeStyle;
@@ -979,7 +989,7 @@ function drawInfoPopup(vWidth, aspect_size) {
 
     ctx.textAlign = "left";
     ctx.textBaseline = "middle";
-    ctx.fillText("DATA_STREAMS // HELP_PROMPT", tooltipX + (10 / aspect_size), tooltipY + (12 / aspect_size));
+    ctx.fillText(UI_TEXT.HELP_HEADER_TEXT[CURRENT_GAME_LANGUAGE], tooltipX + (10 / aspect_size), tooltipY + (12 / aspect_size));
 
 
     ctx.strokeStyle = "#00f2ff";
@@ -999,12 +1009,15 @@ function drawInfoPopup(vWidth, aspect_size) {
     ctx.textBaseline = "top";
 
     lines.forEach((line, i) => {
-        // Adding a small bullet point for each line
-        ctx.fillStyle = "#00f2ff";
-        ctx.fillText(">", tooltipX + padding, tooltipY + (padding * 1.5) + i * lineHeight);
+        if (typeof line === "string") {
+            // Adding a small bullet point for each line
+            ctx.fillStyle = "#00f2ff";
+            ctx.fillText(">", tooltipX + padding, tooltipY + (padding * 1.5) + i * lineHeight);
 
-        ctx.fillStyle = "#f8fafc";
-        ctx.fillText(line, tooltipX + padding + 15, tooltipY + (padding * 1.5) + i * lineHeight);
+            ctx.fillStyle = "#f8fafc";
+            ctx.fillText(line, tooltipX + padding + 15, tooltipY + (padding * 1.5) + i * lineHeight);
+        }
+
     });
 
     ctx.restore();
@@ -1382,6 +1395,8 @@ function drawBonusRound(vWidth, vHeight, aspect_size) {
     const optionGap = 18 / aspect_size;
     const x = (vWidth - optionWidth) / 2;
 
+    const optionLineHeight = bodyFont * 0.8 * 1.3
+
     q.options.forEach((opt, i) => {
         ctx.save()
         const y = startY + i * (optionHeight + optionGap);
@@ -1392,12 +1407,11 @@ function drawBonusRound(vWidth, vHeight, aspect_size) {
         if (isSelected) {
             // Selected: Green Glow
             ctx.shadowBlur = 15 / aspect_size;
-            if(i === q.correctIndex){
+            if (i === q.correctIndex) {
                 ctx.shadowColor = "#21c02c";
                 ctx.fillStyle = "rgb(20,104,5)"
                 ctx.strokeStyle = "#21c02c";
-            }
-            else {
+            } else {
                 ctx.shadowColor = "#c02121";
                 ctx.fillStyle = "rgb(104,5,5)"
                 ctx.strokeStyle = "#c02121";
@@ -1406,12 +1420,11 @@ function drawBonusRound(vWidth, vHeight, aspect_size) {
 
         } else {
 
-            if(mouseIsInside(x,y,optionWidth,optionHeight)){
+            if (mouseIsInside(x, y, optionWidth, optionHeight)) {
                 ctx.shadowBlur = 5;
                 ctx.fillStyle = "rgb(5,92,104)"
                 ctx.strokeStyle = "#475569"; // Slate border
-            }
-            else {
+            } else {
                 ctx.shadowBlur = 0;
                 ctx.fillStyle = "rgba(15, 23, 42, 0.8)";
                 ctx.strokeStyle = "#475569"; // Slate border
@@ -1423,12 +1436,14 @@ function drawBonusRound(vWidth, vHeight, aspect_size) {
         ctx.shadowBlur = 0;
 
         ctx.fillStyle = isSelected ? "#ffffff" : "#cbd5f5";
-        ctx.font = `bold ${bodyFont * 0.9}px monospace`;
+        ctx.font = `bold ${bodyFont * 0.8}px monospace`;
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
         const prefix = String.fromCharCode(65 + i); // 65 is 'A'
-        ctx.fillText(`[${prefix}] ${opt}`, vWidth / 2, y + optionHeight / 2);
+        // ctx.fillText(`[${prefix}] ${opt}`, vWidth / 2, y + optionHeight / 2);
+        wrapText(ctx, `[${prefix}] ${opt}`, vWidth / 2, y + optionHeight / 2, optionWidth, optionLineHeight)
+        // ctx.fillText(`${opt}`, vWidth / 2, y + optionHeight / 2);
         ctx.restore()
     });
 
@@ -1438,6 +1453,57 @@ function drawBonusRound(vWidth, vHeight, aspect_size) {
     ctx.textAlign = "center";
     ctx.font = `bold ${scoreFont}px monospace`;
     ctx.fillText(`DATA_RECOVERED: ${bonusScore}`, vWidth / 2, vHeight - (20 / aspect_size));
+}
+
+function drawLanguageToggle(vWidth, vHeight, aspect_size) {
+    const btnW = 50 / aspect_size;
+    const btnH = 30 / aspect_size;
+    // Position it in the top right, but slightly offset from the corner
+    const btnX = vWidth - btnW - (20 / aspect_size);
+    const btnY = vHeight - btnH - 20 / aspect_size;
+
+    // ISO Labels for the cycle
+    const labels = ["EN", "МК", "SQ"];
+    const activeLabel = labels[langIndex];
+
+    // 1. Draw the "Cyber" Clipped Shape
+    ctx.beginPath();
+    ctx.moveTo(btnX + (10 / aspect_size), btnY);
+    ctx.lineTo(btnX + btnW, btnY);
+    ctx.lineTo(btnX + btnW, btnY + btnH - (10 / aspect_size));
+    ctx.lineTo(btnX + btnW - (10 / aspect_size), btnY + btnH);
+    ctx.lineTo(btnX, btnY + btnH);
+    ctx.lineTo(btnX, btnY + (10 / aspect_size));
+    ctx.closePath();
+
+
+    // Update the global hit area IMMEDIATELY so other functions see it
+    langButtonArea = { x: btnX, y: btnY, w: btnW, h: btnH };
+
+    // Now check for hover
+    let drawColor = mouseIsInside(btnX, btnY, btnW, btnH) ? "#00f2ff" : "#0099a0";
+
+
+    // 2. Fill and Border (Neon Cyan)
+    ctx.fillStyle = "rgba(0, 242, 255, 0.1)";
+    ctx.fill();
+    ctx.strokeStyle = drawColor;
+    ctx.lineWidth = 2;
+    ctx.stroke();
+
+    // 3. Label Text
+    ctx.fillStyle = drawColor;
+    ctx.shadowBlur = mouseIsInside(btnX, btnY, btnW, btnH) ? 15 : 5;
+    ctx.shadowColor = drawColor;
+    ctx.font = `bold ${Math.round(14 / aspect_size)}px "Courier New", monospace`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(activeLabel, btnX + btnW / 2, btnY + btnH / 2);
+
+    ctx.shadowBlur = 0; // Reset for rest of draw calls
+
+    // Define hit area for the click listener
+    langButtonArea = { x: btnX, y: btnY, w: btnW, h: btnH };
 }
 
 function handleImageChoice(img) {
@@ -1525,9 +1591,9 @@ function endBonusRound() {
         score += bonusScore;
         startMiniGame()
     }
-    // if (bonusScore >=0) {
-    //     score += bonusScore;
-    //     startMiniGame()
+        // if (bonusScore >=0) {
+        //     score += bonusScore;
+        //     startMiniGame()
     // }
     else {
         gamePhase = FINAL_GAME_OVER_PHASE
@@ -1674,6 +1740,21 @@ canvas.addEventListener("click", (e) => {
     }
     // With this we will not register clicks to score when the info panel is open
     if (wasHovering) return;
+
+    // if (mx >= langButtonArea.x && mx <= langButtonArea.x + langButtonArea.w &&
+    //     my >= langButtonArea.y && my <= langButtonArea.y + langButtonArea.h) {
+    //
+    //
+    //     cycleLanguage();
+    //     // The next frame of draw() will now automatically use the new currentActiveLanguage
+    // }
+
+    if (isInside(mx,my,langButtonArea.x,langButtonArea.y,langButtonArea.w,langButtonArea.h)) {
+
+
+        cycleLanguage();
+        // The next frame of draw() will now automatically use the new currentActiveLanguage
+    }
 
     const vWidth = canvas.width / dpr
     const vHeight = canvas.height / dpr

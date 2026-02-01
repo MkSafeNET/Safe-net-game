@@ -1,0 +1,7 @@
+const GAME_LANGUAGES = {
+    ENGLISH_LANGUAGE: 'en',
+    MACEDONIAN_LANGUAGE: 'mk',
+    ALBANIAN_LANGUAGE: 'al'
+}
+
+export {GAME_LANGUAGES}
