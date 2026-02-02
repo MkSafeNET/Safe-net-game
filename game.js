@@ -1873,6 +1873,7 @@ canvas.addEventListener('touchend', () => {
 
     mouseData = null;
 
+
     setTimeout(() => {
         isTouchActive = false;
     }, 250);
