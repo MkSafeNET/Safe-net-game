@@ -61,6 +61,7 @@ let CURRENT_GAME_LANGUAGE = LANG_LIST[langIndex]
 let langButtonArea = {}
 
 let mainRafId = null;
+let isTouchActive = false;
 
 let score = 0
 let gameRunning = false
@@ -1843,14 +1844,40 @@ canvas.addEventListener("click", (e) => {
 })
 
 canvas.addEventListener("mousemove", (e) => {
+
+    if (isTouchActive) return;
+
     const rect = canvas.getBoundingClientRect()
     const mx = e.clientX - rect.left
     const my = e.clientY - rect.top
     mouseData = {
         mx,
-        my
+        my,
+        isTouch: false
     }
 })
+
+// Handle Touches
+canvas.addEventListener('touchstart', (e) => {
+    isTouchActive = true;
+    const rect = canvas.getBoundingClientRect();
+    const touch = e.touches[0];
+    mouseData = {
+        mx: touch.clientX - rect.left,
+        my: touch.clientY - rect.top,
+        isTouch: true // Flag to identify touch
+    };
+}, { passive: false });
+
+canvas.addEventListener('touchend', () => {
+
+    mouseData = null;
+
+    setTimeout(() => {
+        isTouchActive = false;
+    }, 250);
+
+}, { passive: false });
 
 canvas.addEventListener("mouseleave", () => {
     mouseData = null
