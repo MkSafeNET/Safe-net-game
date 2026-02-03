@@ -36,6 +36,7 @@ const BONUS_ROUND_BODY_TEXT_FONT_SIZE = 20
 const BONUS_ROUND_SCORE_TEXT_FONT_SIZE = 18
 
 
+const INTRO_PHASE = "intro"
 const PLAYING_PHASE = "playing"
 const SUCCESS_PHASE = "success"
 const RETRY_PROMPT_PHASE = "retryPrompt"
@@ -63,7 +64,7 @@ let langButtonArea = {}
 let mainRafId = null;
 let isTouchActive = false;
 
-let score = 0
+let points = 0
 let gameRunning = false
 let passwordChoices = []
 let currentImages = []
@@ -86,7 +87,7 @@ let gameEnded = false
 let isMiniGameFinished = false
 
 
-let gamePhase = PLAYING_PHASE // playing | success | retryPrompt | bonusRound | finalGameOver
+let gamePhase = INTRO_PHASE // playing | success | retryPrompt | bonusRound | finalGameOver
 
 let phaseTimer = 0
 
@@ -100,7 +101,14 @@ let bonusTimeoutId = null;
 
 let selectedOption = null
 let minScore = 10
+
+const MAX_SUCCESS_WAVES = 3
 let successSequence = 0
+
+
+const WAVE_TARGET = 10;
+
+let introButton = null
 
 let restartButton = null
 
@@ -281,9 +289,9 @@ function shuffleArray(arr) {
 }
 
 function startGame() {
-    gamePhase = PLAYING_PHASE
+    gamePhase = INTRO_PHASE
     if (!isMiniGameFinished) {
-        score = 0
+        points = 0
     }
     gameRunning = true
     gameEnded = false
@@ -291,7 +299,6 @@ function startGame() {
     startNewRound()
     startMainLoop()
 }
-
 
 function randomChar(type) {
     const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -302,6 +309,12 @@ function randomChar(type) {
     if (type === "lower") return lower[Math.floor(Math.random() * lower.length)]
     if (type === "number") return numbers[Math.floor(Math.random() * numbers.length)]
     if (type === "symbol") return SYMBOLS[Math.floor(Math.random() * SYMBOLS.length)]
+}
+
+function getTrainingPercent() {
+    const waveFrac = points / WAVE_TARGET;           // 0..1
+    const overall = (successSequence + waveFrac) / MAX_SUCCESS_WAVES; // 0..1
+    return Math.max(0, Math.min(1, overall));
 }
 
 function generateReallySafe() {
@@ -422,18 +435,10 @@ function endMiniGame(mini_games_complete_count) {
     }
 
 
-    // console.log(mini_games_complete_count)
-    isMiniGameFinished = true
-    // let isHappy = isHappyEnd();
-    // console.log("HappyEnd")
-    // console.log(isHappy)
-    // if (isHappy) {
-    //     score += 10
-    // }
 
-    score += mini_games_complete_count * 10
+    // points += mini_games_complete_count * 10
 
-    minScore = score + 10
+    minScore = points + 10
     successSequence = 0
 
     startGame()
@@ -461,14 +466,12 @@ function update() {
         }
 
         if (timeElapsed >= gameDuration) {
-            if (score >= minScore) {
+            if (points >= WAVE_TARGET) {
                 gamePhase = SUCCESS_PHASE
                 phaseTimer = 3
-                minScore = score + 10;
                 successSequence += 1
             } else {
                 gamePhase = RETRY_PROMPT_PHASE
-                minScore = 10
                 successSequence = 0
             }
         }
@@ -478,7 +481,7 @@ function update() {
         phaseTimer -= delta
 
         if (phaseTimer <= 0) {
-            if (successSequence > 1) {
+            if (successSequence >= MAX_SUCCESS_WAVES) {
                 startMiniGame()
             } else {
                 resetMainGame()
@@ -492,9 +495,23 @@ function resetMainGame() {
     timeElapsed = 0
     gameRunning = true
     gamePhase = PLAYING_PHASE
+    points = 0
     startNewRound()
     lastTime = Date.now()
     startMainLoop()
+}
+
+function addPoints(delta) {
+    points += delta;
+
+    // clamp to [0..10]
+    if (points < 0) points = 0;
+    if (points > WAVE_TARGET) points = WAVE_TARGET;
+
+    // if we hit 10, end this sequence immediately
+    if (points >= WAVE_TARGET) {
+        timeElapsed = gameDuration + 10; // triggers success check in update()
+    }
 }
 
 function drawTotalTimer(vWidth, vHeight, aspect_size) {
@@ -530,6 +547,11 @@ function draw() {
         ctx.filter = `blur(${8 / aspect_size}px)`
     }
 
+    if (gamePhase === INTRO_PHASE) {
+        drawIntroScreen(vWidth, vHeight, aspect_size)
+        drawLanguageToggle(vWidth, vHeight, aspect_size)
+        return
+    }
 
     if (gamePhase === SUCCESS_PHASE) {
         drawSuccessScreen(vWidth, vHeight)
@@ -556,7 +578,8 @@ function draw() {
     }
 
     drawInstructions(vWidth, vHeight, aspect_size)
-    drawScore(vWidth, aspect_size)
+    // drawScore(vWidth, aspect_size)
+    drawScoreBar(vWidth, aspect_size)
     drawTimer(vWidth, vHeight, aspect_size)
 
     if (currentRoundMode === PASSWORDS_MODE) {
@@ -577,55 +600,72 @@ function draw() {
 }
 
 function drawSuccessScreen(vWidth, vHeight) {
+    // Background
+    const bgGrad = ctx.createRadialGradient(vWidth / 2, vHeight / 2, 10, vWidth / 2, vHeight / 2, vWidth);
+    bgGrad.addColorStop(0, "#0f172a");
+    bgGrad.addColorStop(1, "#020617");
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, vWidth, vHeight);
 
-    const gradient = ctx.createLinearGradient(0, 0, 0, vHeight)
-    gradient.addColorStop(0, "#020617")
-    gradient.addColorStop(1, "#020617")
-    ctx.fillStyle = gradient
-    ctx.fillRect(0, 0, vWidth, vHeight)
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
 
-    ctx.textAlign = "center"
-    ctx.textBaseline = "middle"
+    // Progress info
+    const totalSteps = MAX_SUCCESS_WAVES;
+    const step = Math.min(successSequence, totalSteps);
+    const isFinal = step >= totalSteps;
 
+    // Icon
+    const cx = vWidth / 2;
+    const cy = vHeight * 0.34;
+    const r = vWidth * 0.06;
 
-    const cx = vWidth / 2
-    const cy = vHeight * 0.4
-    const r = vWidth * 0.06
+    ctx.save();
+    ctx.strokeStyle = isFinal ? "#00f2ff" : "#22c55e";
+    ctx.lineWidth = Math.max(4, vWidth * 0.004);
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.stroke();
 
-    ctx.strokeStyle = "#22c55e"
-    ctx.lineWidth = 6
-    ctx.beginPath()
-    ctx.arc(cx, cy, r, 0, Math.PI * 2)
-    ctx.stroke()
+    // Check mark
+    ctx.lineCap = "round";
+    ctx.beginPath();
+    ctx.moveTo(cx - r * 0.4, cy);
+    ctx.lineTo(cx - r * 0.1, cy + r * 0.3);
+    ctx.lineTo(cx + r * 0.45, cy - r * 0.35);
+    ctx.stroke();
+    ctx.restore();
 
-
-    ctx.strokeStyle = "#22c55e"
-    ctx.lineWidth = 6
-    ctx.lineCap = "round"
-    ctx.beginPath()
-    ctx.moveTo(cx - r * 0.4, cy)
-    ctx.lineTo(cx - r * 0.1, cy + r * 0.3)
-    ctx.lineTo(cx + r * 0.45, cy - r * 0.35)
-    ctx.stroke()
-
-
-    ctx.fillStyle = "#22c55e"
-    ctx.font = `bold ${vWidth * 0.05}px Arial`
+    // Header
+    ctx.fillStyle = isFinal ? "#00f2ff" : "#22c55e";
+    ctx.font = `bold ${Math.round(vWidth * 0.05)}px "Courier New", monospace`;
     ctx.fillText(
-        "Well done!",
+        isFinal ? "TRAINING COMPLETE" : "TRAINING UPDATED",
         vWidth / 2,
-        vHeight * 0.55
-    )
+        vHeight * 0.52
+    );
 
-
-    ctx.fillStyle = "#e5e7eb"
-    ctx.font = `${vWidth * 0.028}px Arial`
+    // Progress bar text
+    ctx.fillStyle = "#e5e7eb";
+    ctx.font = `${Math.round(vWidth * 0.028)}px "Courier New", monospace`;
     ctx.fillText(
-        "Continue with the same energy",
+        `Progress: ${Math.round(step / totalSteps * 100)}%`,
         vWidth / 2,
-        vHeight * 0.62
-    )
+        vHeight * 0.60
+    );
+
+    // Sub text depends on what happens next
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = `${Math.round(vWidth * 0.022)}px "Courier New", monospace`;
+    ctx.fillText(
+        isFinal
+            ? "Cleanup mission unlocked..."
+            : "Next scan starting...",
+        vWidth / 2,
+        vHeight * 0.67
+    );
 }
+
 
 function drawRetryPrompt(vWidth, vHeight, aspect_size) {
 
@@ -756,7 +796,7 @@ function drawGameOver(vWidth, vHeight, aspect_size) {
     ctx.shadowBlur = 0;
     ctx.fillStyle = "#00f2ff";
     ctx.font = `bold ${Math.round(20 / aspect_size)}px "Courier New", monospace`;
-    ctx.fillText(UI_TEXT.GAME_OVER_SUBHEADER_TEXT[CURRENT_GAME_LANGUAGE] + ` ${score}`, vWidth / 2, vHeight / 2 + (20 / aspect_size));
+    ctx.fillText(UI_TEXT.GAME_OVER_SUBHEADER_TEXT[CURRENT_GAME_LANGUAGE] + ` ${points}`, vWidth / 2, vHeight / 2 + (20 / aspect_size));
 
 
     const btnW = Math.max(200, vWidth / 4);
@@ -842,7 +882,7 @@ function drawScore(vWidth, aspect_size) {
     const text_x = 20 / aspect_size;
     const text_y = 35 / aspect_size;
 
-    // 1. Draw a small decorative HUD bracket behind the score
+    // 1. Draw a small decorative HUD bracket behind the points
     ctx.strokeStyle = "#00f2ff";
     ctx.lineWidth = 2 / aspect_size;
     ctx.beginPath();
@@ -857,7 +897,43 @@ function drawScore(vWidth, aspect_size) {
     ctx.textAlign = "left";
 
     // Use padding to move text away from the bracket
-    ctx.fillText("SCORE_" + score.toString().padStart(4, '0'), text_x + (5 / aspect_size), text_y);
+    ctx.fillText("SCORE_" + points.toString().padStart(4, '0'), text_x + (5 / aspect_size), text_y);
+
+    ctx.restore();
+}
+
+function drawScoreBar(vWidth, aspect_size) {
+    const x = 20 / aspect_size;
+    const y = 25 / aspect_size;
+    const w = vWidth * 0.25;
+    const h = 18 / aspect_size;
+
+    const p = getTrainingPercent(); // 0..1
+    const fillW = w * p;
+
+    ctx.save();
+
+    // label
+    ctx.fillStyle = "#00f2ff";
+    ctx.font = `bold ${Math.round(14 / aspect_size)}px "Courier New", monospace`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+    ctx.fillText(`TRAINING ${Math.round(p * 100)}%`, x, y - (6 / aspect_size));
+
+    // bar background
+    ctx.fillStyle = "rgba(15,23,42,0.9)";
+    ctx.strokeStyle = "#00f2ff";
+    ctx.lineWidth = 2 / aspect_size;
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, 4 / aspect_size);
+    ctx.fill();
+    ctx.stroke();
+
+    // fill
+    ctx.fillStyle = "rgba(0, 242, 255, 0.35)";
+    ctx.beginPath();
+    ctx.roundRect(x, y, fillW, h, 4 / aspect_size);
+    ctx.fill();
 
     ctx.restore();
 }
@@ -1023,17 +1099,6 @@ function drawInfoPopup(vWidth, aspect_size) {
 
     ctx.restore();
 }
-
-// function splitTextThreeLines(text) {
-//     const words = text.split(" ");
-//     const third = Math.ceil(words.length / 3);
-//
-//     const line1 = words.slice(0, third).join(" ");
-//     const line2 = words.slice(third, third * 2).join(" ");
-//     const line3 = words.slice(third * 2).join(" ");
-//
-//     return [line1, line2, line3];
-// }
 
 function drawImages(vWidth, vHeight, aspect_size) {
     const centerX = vWidth / 2;
@@ -1239,76 +1304,6 @@ function drawPasswords(vWidth, vHeight, aspect_size) {
     ctx.restore();
 }
 
-function gameLoop() {
-    if (!gameRunning) {
-        mainRafId = null
-        return
-    }
-
-    update()
-    draw()
-
-    mainRafId = requestAnimationFrame(gameLoop)
-}
-
-function startMainLoop() {
-    if (mainRafId !== null) return; // already running
-    mainRafId = requestAnimationFrame(gameLoop);
-}
-
-function stopMainLoop() {
-    if (mainRafId !== null) {
-        cancelAnimationFrame(mainRafId);
-        mainRafId = null;
-    }
-}
-
-function handlePasswordChoice(text) {
-
-    if (reallySafePasswords.includes(text)) {
-        score += 2
-    } else if (safePasswords.includes(text)) {
-        score += 1
-    } else {
-        score -= 1
-    }
-    startNewRound()
-}
-
-function wrapTextToLines(text, context, maxWidth) {
-    const words = text.split(' ')
-    let line = ''
-    let lines = []
-
-    // 1. Break text into lines
-    for (let n = 0; n < words.length; n++) {
-        let testLine = line + words[n] + ' '
-        let metrics = context.measureText(testLine)
-        let testWidth = metrics.width
-        if (testWidth > maxWidth && n > 0) {
-            lines.push(line)
-            line = words[n] + ' '
-        } else {
-            line = testLine
-        }
-    }
-    lines.push(line)
-    return lines;
-}
-
-function wrapText(context, text, x, y, maxWidth, lineHeight) {
-    let lines = wrapTextToLines(text, context, maxWidth);
-
-    // 2. Draw each line
-    // We adjust the Y start point so the group of lines is vertically centered
-    let totalHeight = lines.length * lineHeight
-    let startY = y - (totalHeight / 2) + (lineHeight / 2)
-
-    for (let k = 0; k < lines.length; k++) {
-        context.fillText(lines[k], x, startY + (k * lineHeight))
-    }
-}
-
 function drawCutCornerRect(x, y, w, h, cut, stroke = true, fill = true) {
     ctx.beginPath();
     ctx.moveTo(x + cut, y);
@@ -1489,12 +1484,12 @@ function drawLanguageToggle(vWidth, vHeight, aspect_size) {
     ctx.fillStyle = "rgba(0, 242, 255, 0.1)";
     ctx.fill();
     ctx.strokeStyle = drawColor;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2 / aspect_size;
     ctx.stroke();
 
     // 3. Label Text
     ctx.fillStyle = drawColor;
-    ctx.shadowBlur = mouseIsInside(btnX, btnY, btnW, btnH) ? 15 : 5;
+    ctx.shadowBlur = mouseIsInside(btnX, btnY, btnW, btnH) ? 15 / aspect_size : 5 / aspect_size;
     ctx.shadowColor = drawColor;
     ctx.font = `bold ${Math.round(14 / aspect_size)}px "Courier New", monospace`;
     ctx.textAlign = "center";
@@ -1507,11 +1502,136 @@ function drawLanguageToggle(vWidth, vHeight, aspect_size) {
     langButtonArea = { x: btnX, y: btnY, w: btnW, h: btnH };
 }
 
+function drawIntroScreen(vWidth, vHeight, aspect_size) {
+    // Background
+    const bgGrad = ctx.createRadialGradient(vWidth/2, vHeight/2, 10, vWidth/2, vHeight/2, vWidth);
+    bgGrad.addColorStop(0, "#0f172a");
+    bgGrad.addColorStop(1, "#020617");
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, vWidth, vHeight);
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    // Title
+    ctx.fillStyle = "#00f2ff";
+    ctx.shadowBlur = 12 / aspect_size;
+    ctx.shadowColor = "#00f2ff";
+    ctx.font = `bold ${Math.round(32 / aspect_size)}px monospace`;
+    ctx.fillText("ANTIVIRUS TRAINING // SIMULATION", vWidth/2, vHeight*0.25);
+
+    ctx.shadowBlur = 0;
+
+    // Body text (keep it short)
+    ctx.fillStyle = "#cbd5e1";
+    ctx.font = `${Math.round(18 / aspect_size)}px monospace`;
+
+    const lines = [
+        "Your antivirus is not fully trained.",
+        "Identify unsafe passwords and risky situations.",
+        "Train it enough to unlock the cleanup mission."
+    ];
+
+    const lineH = Math.round(26 / aspect_size);
+    let startY = vHeight * 0.40;
+    lines.forEach((t, i) => ctx.fillText(t, vWidth/2, startY + i * lineH));
+
+    // Button
+    const w = vWidth * 0.35;
+    const h = Math.round(60 / aspect_size);
+    const x = (vWidth - w) / 2;
+    const y = vHeight * 0.68;
+
+    introButton = { x, y, w, h };
+
+    drawCyberButton("BEGIN TRAINING", x, y, w, h, true, aspect_size);
+
+    // Small hint
+    ctx.fillStyle = "#717d8c";
+    ctx.font = `${Math.round(14 / aspect_size)}px monospace`;
+    ctx.fillText("Click to start", vWidth/2, y - (15 / aspect_size));
+}
+
+function wrapText(context, text, x, y, maxWidth, lineHeight) {
+    let lines = wrapTextToLines(text, context, maxWidth);
+
+    // 2. Draw each line
+    // We adjust the Y start point so the group of lines is vertically centered
+    let totalHeight = lines.length * lineHeight
+    let startY = y - (totalHeight / 2) + (lineHeight / 2)
+
+    for (let k = 0; k < lines.length; k++) {
+        context.fillText(lines[k], x, startY + (k * lineHeight))
+    }
+}
+
+function wrapTextToLines(text, context, maxWidth) {
+    const words = text.split(' ')
+    let line = ''
+    let lines = []
+
+    // 1. Break text into lines
+    for (let n = 0; n < words.length; n++) {
+        let testLine = line + words[n] + ' '
+        let metrics = context.measureText(testLine)
+        let testWidth = metrics.width
+        if (testWidth > maxWidth && n > 0) {
+            lines.push(line)
+            line = words[n] + ' '
+        } else {
+            line = testLine
+        }
+    }
+    lines.push(line)
+    return lines;
+}
+
+function gameLoop() {
+    if (!gameRunning) {
+        mainRafId = null
+        return
+    }
+
+    update()
+    draw()
+
+    mainRafId = requestAnimationFrame(gameLoop)
+}
+
+function startMainLoop() {
+    if (mainRafId !== null) return; // already running
+    mainRafId = requestAnimationFrame(gameLoop);
+}
+
+function stopMainLoop() {
+    if (mainRafId !== null) {
+        cancelAnimationFrame(mainRafId);
+        mainRafId = null;
+    }
+}
+
+function handlePasswordChoice(text) {
+
+    if (reallySafePasswords.includes(text)) {
+        // points += 2
+        addPoints(2)
+    } else if (safePasswords.includes(text)) {
+        // points += 1
+        addPoints(1)
+    } else {
+        // points -= 1
+        addPoints(-1)
+    }
+    startNewRound()
+}
+
 function handleImageChoice(img) {
     if (safeImages.includes(img)) {
-        score += 2
+        // points += 2
+        addPoints(2)
     } else {
-        score -= 1
+        // points -= 1
+        addPoints(-1)
     }
     startNewRound()
 }
@@ -1586,16 +1706,13 @@ function endBonusRound() {
     bonusActive = false
 
     if (bonusScore >= 3 && bonusScore < 5) {
-        score += bonusScore;
+        // points += bonusScore;
         resetMainGame()
     } else if (bonusScore === 5) {
-        score += bonusScore;
+        // points += bonusScore;
         startMiniGame()
     }
-        // if (bonusScore >=0) {
-        //     score += bonusScore;
-        //     startMiniGame()
-    // }
+
     else {
         gamePhase = FINAL_GAME_OVER_PHASE
     }
@@ -1739,22 +1856,12 @@ canvas.addEventListener("click", (e) => {
     if (wasHovering && !info.open) {
         lastTime = Date.now();
     }
-    // With this we will not register clicks to score when the info panel is open
+    // With this we will not register clicks to points when the info panel is open
     if (wasHovering) return;
-
-    // if (mx >= langButtonArea.x && mx <= langButtonArea.x + langButtonArea.w &&
-    //     my >= langButtonArea.y && my <= langButtonArea.y + langButtonArea.h) {
-    //
-    //
-    //     cycleLanguage();
-    //     // The next frame of draw() will now automatically use the new currentActiveLanguage
-    // }
 
     if (isInside(mx,my,langButtonArea.x,langButtonArea.y,langButtonArea.w,langButtonArea.h)) {
 
-
         cycleLanguage();
-        // The next frame of draw() will now automatically use the new currentActiveLanguage
     }
 
     const vWidth = canvas.width / dpr
@@ -1772,6 +1879,15 @@ canvas.addEventListener("click", (e) => {
 
     const optionX = (vWidth - optionWidth) / 2
 
+    if (gamePhase === INTRO_PHASE && introButton) {
+        if (isInside(mx, my, introButton.x, introButton.y, introButton.w, introButton.h)) {
+            gamePhase = PLAYING_PHASE
+            startNewRound()
+            lastTime = Date.now()
+            return
+        }
+    }
+
     if (gamePhase === FINAL_GAME_OVER_PHASE && restartButton) {
         if (
             isInside(
@@ -1783,7 +1899,7 @@ canvas.addEventListener("click", (e) => {
                 restartButton.h
             )
         ) {
-            score = 0
+            points = 0
             resetMainGame()
 
             // startMiniGame()
@@ -1821,7 +1937,7 @@ canvas.addEventListener("click", (e) => {
 
         if (isInside(mx, my, vWidth / 2 + button_spacing, vHeight * 0.56, buttonW, buttonH)) {
             // gamePhase = FINAL_GAME_OVER_PHASE
-            score = 0
+            points = 0
 
             resetMainGame()
             return
