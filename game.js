@@ -690,7 +690,7 @@ function drawSuccessScreen(vWidth, vHeight) {
     ctx.fillStyle = isFinal ? "#00f2ff" : "#22c55e";
     ctx.font = `bold ${Math.round(vWidth * 0.05)}px "Courier New", monospace`;
     ctx.fillText(
-        isFinal ? "TRAINING COMPLETE" : "TRAINING UPDATED",
+        isFinal ? UI_TEXT.SUCCESS_SCREEN_HEADER_TEXT[CURRENT_GAME_LANGUAGE][0] : UI_TEXT.SUCCESS_SCREEN_HEADER_TEXT[CURRENT_GAME_LANGUAGE][1],
         vWidth / 2,
         vHeight * 0.52
     );
@@ -699,7 +699,7 @@ function drawSuccessScreen(vWidth, vHeight) {
     ctx.fillStyle = "#e5e7eb";
     ctx.font = `${Math.round(vWidth * 0.028)}px "Courier New", monospace`;
     ctx.fillText(
-        `Progress: ${Math.round(step / totalSteps * 100)}%`,
+        UI_TEXT.SUCCESS_SCREEN_PROGREES_TEXT[CURRENT_GAME_LANGUAGE]+` ${Math.round(step / totalSteps * 100)}%`,
         vWidth / 2,
         vHeight * 0.60
     );
@@ -709,8 +709,8 @@ function drawSuccessScreen(vWidth, vHeight) {
     ctx.font = `${Math.round(vWidth * 0.022)}px "Courier New", monospace`;
     ctx.fillText(
         isFinal
-            ? "Cleanup mission unlocked..."
-            : "Next scan starting...",
+            ? UI_TEXT.SUCCESS_SCREEN_SUBHEADER_TEXT[CURRENT_GAME_LANGUAGE][0]
+            : UI_TEXT.SUCCESS_SCREEN_SUBHEADER_TEXT[CURRENT_GAME_LANGUAGE][1],
         vWidth / 2,
         vHeight * 0.67
     );
@@ -931,18 +931,18 @@ function drawMinigameIntroScreen(vWidth, vHeight, aspect_size) {
     ctx.textBaseline = "middle";
 
     // Title + text depends on why we are here
-    let title = "CLEANUP MISSION UNLOCKED";
-    let line1 = "You are ready to start the cleanup mission.";
-    let line2 = "Press the button to deploy.";
+    let title = UI_TEXT.MINIGAME_REASON_TITLE[CURRENT_GAME_LANGUAGE];
+    let line1 = UI_TEXT.MINIGAME_REASON_LINE_1[CURRENT_GAME_LANGUAGE];
+    let line2 = UI_TEXT.MINIGAME_REASON_LINE_2[CURRENT_GAME_LANGUAGE];
 
     if (minigameReason === MINIGAME_REASON.BONUS_PERFECT) {
-        title = "PERFECT DECRYPTION // ACCESS GRANTED";
-        line1 = "All answers correct.";
-        line2 = "Immediate deployment authorized.";
+        title = UI_TEXT.MINIGAME_REASON_BONUS_PERFECT_TITLE[CURRENT_GAME_LANGUAGE];
+        line1 = UI_TEXT.MINIGAME_REASON_BONUS_PERFECT_LINE_1[CURRENT_GAME_LANGUAGE];
+        line2 = UI_TEXT.MINIGAME_REASON_BONUS_PERFECT_LINE_2[CURRENT_GAME_LANGUAGE];
     } else if (minigameReason === MINIGAME_REASON.TRAINING_COMPLETE) {
-        title = "TRAINING COMPLETE // MISSION READY";
-        line1 = "Training waves completed.";
-        line2 = "Cleanup mission is now available.";
+        title = UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_TITLE[CURRENT_GAME_LANGUAGE];
+        line1 = UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_1[CURRENT_GAME_LANGUAGE];
+        line2 = UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_2[CURRENT_GAME_LANGUAGE];
     }
 
     // Header
@@ -968,7 +968,7 @@ function drawMinigameIntroScreen(vWidth, vHeight, aspect_size) {
 
     minigameIntroButton = { x, y, w, h };
 
-    drawCyberButton("START CLEANUP MISSION", x, y, w, h, true, aspect_size);
+    drawCyberButton(UI_TEXT.MINIGAME_REASON_BUTTON_TEXT[CURRENT_GAME_LANGUAGE], x, y, w, h, true, aspect_size);
 }
 
 
