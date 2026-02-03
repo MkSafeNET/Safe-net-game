@@ -309,7 +309,7 @@ function startGame() {
     timeElapsed = 0;
     gameEnded = false;
 
-    gamePhase = MINIGAME_INTRO_PHASE;
+    gamePhase = INTRO_PHASE;
 
     gameRunning = true;
     lastTime = Date.now();
@@ -1649,19 +1649,17 @@ function drawIntroScreen(vWidth, vHeight, aspect_size) {
     ctx.shadowBlur = 12 / aspect_size;
     ctx.shadowColor = "#00f2ff";
     ctx.font = `bold ${Math.round(32 / aspect_size)}px monospace`;
-    ctx.fillText("ANTIVIRUS TRAINING // SIMULATION", vWidth/2, vHeight*0.25);
+    ctx.fillText(UI_TEXT.INTRO_PHASE_HEADER_TEXT[CURRENT_GAME_LANGUAGE], vWidth/2, vHeight*0.25);
 
     ctx.shadowBlur = 0;
 
     // Body text (keep it short)
     ctx.fillStyle = "#cbd5e1";
     ctx.font = `${Math.round(18 / aspect_size)}px monospace`;
+    const subheader=UI_TEXT.INTRO_PHASE_SUBHEADER_TEXT[CURRENT_GAME_LANGUAGE];
 
-    const lines = [
-        "Your antivirus is not fully trained.",
-        "Identify unsafe passwords and risky situations.",
-        "Train it enough to unlock the cleanup mission."
-    ];
+    const lines = subheader.split("\n");
+
 
     const lineH = Math.round(26 / aspect_size);
     let startY = vHeight * 0.40;
@@ -1675,12 +1673,12 @@ function drawIntroScreen(vWidth, vHeight, aspect_size) {
 
     introButton = { x, y, w, h };
 
-    drawCyberButton("BEGIN TRAINING", x, y, w, h, true, aspect_size);
+    drawCyberButton(UI_TEXT.INTRO_PHASE_BUTTON_TEXT[CURRENT_GAME_LANGUAGE], x, y, w, h, true, aspect_size);
 
     // Small hint
     ctx.fillStyle = "#717d8c";
     ctx.font = `${Math.round(14 / aspect_size)}px monospace`;
-    ctx.fillText("Click to start", vWidth/2, y - (15 / aspect_size));
+    ctx.fillText(UI_TEXT.INTRO_PHASE_BUTTON_LABEL_TEXT[CURRENT_GAME_LANGUAGE], vWidth/2, y - (15 / aspect_size));
 }
 
 function wrapText(context, text, x, y, maxWidth, lineHeight) {
