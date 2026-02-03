@@ -22,7 +22,7 @@ const ctx = canvas.getContext("2d")
 
 const dpr = window.devicePixelRatio || 1
 
-const SCORE_FONT_SIZE = 18
+const SCORE_FONT_SIZE = 14
 const PASSWORDS_FONT_SIZE = 22
 const TOTAL_TIMER_FONT_SIZE = 18
 const TIMER_RADIUS_SIZE = 20
@@ -84,14 +84,11 @@ let roundDuration = 5
 let timeElapsed = 0
 let gameEnded = false
 
-let isMiniGameFinished = false
-
-
 let gamePhase = INTRO_PHASE // playing | success | retryPrompt | bonusRound | finalGameOver
 
 let phaseTimer = 0
 
-// let bonusQuestionsAnswered = 0
+
 let bonusIndex = 0
 let bonusScore = 0
 let bonusActive = true
@@ -100,7 +97,6 @@ let bonusLocked = false;
 let bonusTimeoutId = null;
 
 let selectedOption = null
-let minScore = 10
 
 const MAX_SUCCESS_WAVES = 3
 let successSequence = 0
@@ -114,7 +110,7 @@ let restartButton = null
 
 let mouseData = null
 
-let bonusQuestions = questions[CURRENT_GAME_LANGUAGE]
+let bonusQuestions = [...questions[CURRENT_GAME_LANGUAGE]];
 
 // Arrays to hold the successfully loaded image objects
 const safeImages = []
@@ -289,15 +285,36 @@ function shuffleArray(arr) {
 }
 
 function startGame() {
-    gamePhase = INTRO_PHASE
-    if (!isMiniGameFinished) {
-        points = 0
-    }
-    gameRunning = true
-    gameEnded = false
-    timeElapsed = 0
-    startNewRound()
-    startMainLoop()
+
+    reallySafePasswords = [];
+    safePasswords = [];
+    notSafePasswords = [];
+    passwordChoices = [];
+    currentImages = [];
+
+    points = 0;
+    successSequence = 0;
+    timeElapsed = 0;
+    gameEnded = false;
+
+    gamePhase = INTRO_PHASE;
+
+    gameRunning = true;
+    lastTime = Date.now();
+    startMainLoop();
+}
+
+function startTraining() {
+    points = 0;
+    timeElapsed = 0;
+    gamePhase = PLAYING_PHASE;
+    startNewRound();
+    lastTime = Date.now();
+}
+
+function startGameImmediate() {
+    startGame();   // resets + intro state
+    startTraining();   // jumps into playing
 }
 
 function randomChar(type) {
@@ -401,7 +418,7 @@ function spawnTwoImages() {
     roundTime = 10
     timeLeft = 10
     roundDuration = 10
-    timeElapsed -= 2
+    timeElapsed = Math.max(0, timeElapsed - 2);
 
 
     currentImages = [];
@@ -425,7 +442,7 @@ function startMiniGame() {
     StartMiniGame()
 }
 
-function endMiniGame(mini_games_complete_count) {
+function endMiniGame() {
     canvas.style.display = 'block'
     canvas2D.style.display = "none"
 
@@ -434,13 +451,7 @@ function endMiniGame(mini_games_complete_count) {
         controls.remove(); // Completely removes the elements from the DOM
     }
 
-
-
-    // points += mini_games_complete_count * 10
-
-    minScore = points + 10
     successSequence = 0
-
     startGame()
 }
 
@@ -550,23 +561,27 @@ function draw() {
     if (gamePhase === INTRO_PHASE) {
         drawIntroScreen(vWidth, vHeight, aspect_size)
         drawLanguageToggle(vWidth, vHeight, aspect_size)
+        if (blurred) ctx.restore();
         return
     }
 
     if (gamePhase === SUCCESS_PHASE) {
         drawSuccessScreen(vWidth, vHeight)
+        if (blurred) ctx.restore();
         return
     }
 
     if (gamePhase === RETRY_PROMPT_PHASE) {
         drawRetryPrompt(vWidth, vHeight, aspect_size)
         drawLanguageToggle(vWidth, vHeight, aspect_size)
+        if (blurred) ctx.restore();
         return
     }
 
     if (gamePhase === FINAL_GAME_OVER_PHASE) {
         drawGameOver(vWidth, vHeight, aspect_size)
         drawLanguageToggle(vWidth, vHeight, aspect_size)
+        if (blurred) ctx.restore();
         return
     }
 
@@ -574,6 +589,7 @@ function draw() {
         // console.log('draw() - (gamePhase === "bonusRound")')
         drawBonusRound(vWidth, vHeight, aspect_size)
         drawLanguageToggle(vWidth, vHeight, aspect_size)
+        if (blurred) ctx.restore();
         return
     }
 
@@ -875,32 +891,32 @@ function drawInstructions(vWidth, vHeight, aspect_size) {
     ctx.restore();
 }
 
-/** Function that draws the Score */
-function drawScore(vWidth, aspect_size) {
-    ctx.save();
-    let font_size = Math.round(SCORE_FONT_SIZE / aspect_size);
-    const text_x = 20 / aspect_size;
-    const text_y = 35 / aspect_size;
-
-    // 1. Draw a small decorative HUD bracket behind the points
-    ctx.strokeStyle = "#00f2ff";
-    ctx.lineWidth = 2 / aspect_size;
-    ctx.beginPath();
-    ctx.moveTo(text_x - (5 / aspect_size), text_y - (15 / aspect_size));
-    ctx.lineTo(text_x - (5 / aspect_size), text_y + (10 / aspect_size));
-    ctx.lineTo(text_x + (10 / aspect_size), text_y + (10 / aspect_size));
-    ctx.stroke();
-
-    // 2. Draw the Score Text
-    ctx.fillStyle = "#00f2ff";
-    ctx.font = `bold ${font_size}px "Courier New", Courier, monospace`;
-    ctx.textAlign = "left";
-
-    // Use padding to move text away from the bracket
-    ctx.fillText("SCORE_" + points.toString().padStart(4, '0'), text_x + (5 / aspect_size), text_y);
-
-    ctx.restore();
-}
+// /** Function that draws the Score */
+// function drawScore(vWidth, aspect_size) {
+//     ctx.save();
+//     let font_size = Math.round(SCORE_FONT_SIZE / aspect_size);
+//     const text_x = 20 / aspect_size;
+//     const text_y = 35 / aspect_size;
+//
+//     // 1. Draw a small decorative HUD bracket behind the points
+//     ctx.strokeStyle = "#00f2ff";
+//     ctx.lineWidth = 2 / aspect_size;
+//     ctx.beginPath();
+//     ctx.moveTo(text_x - (5 / aspect_size), text_y - (15 / aspect_size));
+//     ctx.lineTo(text_x - (5 / aspect_size), text_y + (10 / aspect_size));
+//     ctx.lineTo(text_x + (10 / aspect_size), text_y + (10 / aspect_size));
+//     ctx.stroke();
+//
+//     // 2. Draw the Score Text
+//     ctx.fillStyle = "#00f2ff";
+//     ctx.font = `bold ${font_size}px "Courier New", Courier, monospace`;
+//     ctx.textAlign = "left";
+//
+//     // Use padding to move text away from the bracket
+//     ctx.fillText("SCORE_" + points.toString().padStart(4, '0'), text_x + (5 / aspect_size), text_y);
+//
+//     ctx.restore();
+// }
 
 function drawScoreBar(vWidth, aspect_size) {
     const x = 20 / aspect_size;
@@ -915,7 +931,7 @@ function drawScoreBar(vWidth, aspect_size) {
 
     // label
     ctx.fillStyle = "#00f2ff";
-    ctx.font = `bold ${Math.round(14 / aspect_size)}px "Courier New", monospace`;
+    ctx.font = `bold ${Math.round(SCORE_FONT_SIZE / aspect_size)}px "Courier New", monospace`;
     ctx.textAlign = "left";
     ctx.textBaseline = "bottom";
     ctx.fillText(`TRAINING ${Math.round(p * 100)}%`, x, y - (6 / aspect_size));
@@ -1848,20 +1864,18 @@ canvas.addEventListener("click", (e) => {
     const dx = mx - info.x
     const dy = my - info.y
 
-    const wasHovering = info.open;
-    if (Math.sqrt(dx * dx + dy * dy) <= info.radius) {
-        info.open = !info.open
-    }
-
-    if (wasHovering && !info.open) {
+    const clickedInfo = Math.sqrt(dx*dx + dy*dy) <= info.radius;
+    if (clickedInfo && gamePhase === PLAYING_PHASE ) {
+        info.open = !info.open;
         lastTime = Date.now();
+        return;
     }
-    // With this we will not register clicks to points when the info panel is open
-    if (wasHovering) return;
+    if (info.open) return;
 
     if (isInside(mx,my,langButtonArea.x,langButtonArea.y,langButtonArea.w,langButtonArea.h)) {
 
         cycleLanguage();
+        return;
     }
 
     const vWidth = canvas.width / dpr
@@ -1881,9 +1895,7 @@ canvas.addEventListener("click", (e) => {
 
     if (gamePhase === INTRO_PHASE && introButton) {
         if (isInside(mx, my, introButton.x, introButton.y, introButton.w, introButton.h)) {
-            gamePhase = PLAYING_PHASE
-            startNewRound()
-            lastTime = Date.now()
+            startTraining()
             return
         }
     }
@@ -1929,17 +1941,15 @@ canvas.addEventListener("click", (e) => {
         const button_spacing = Math.round(20 / aspect_size);
 
         if (isInside(mx, my, vWidth / 2 - buttonW - button_spacing, vHeight * 0.56, buttonW, buttonH)) {
-            //to do
-            console.log('try again clicked')
+
             startBonusRound()
             return
         }
 
         if (isInside(mx, my, vWidth / 2 + button_spacing, vHeight * 0.56, buttonW, buttonH)) {
-            // gamePhase = FINAL_GAME_OVER_PHASE
-            points = 0
 
-            resetMainGame()
+            // gamePhase = INTRO_PHASE
+            startGame()
             return
         }
     }
