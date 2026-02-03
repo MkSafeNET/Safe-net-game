@@ -25,8 +25,22 @@ THE SOFTWARE.
 
 import {resizeMiniGameCanvas} from "./resizeMiniGame.js";
 import {getRandomLevel} from "./minigame_levels.js";
+import {getTotalLevelsCount} from "./minigame_levels.js";
 
 export function Game2D(endGameFunc) {
+
+    const UI_PHASE = {
+        PLAYING: "playing",
+        LEVEL_CLEAR: "levelClear",   // timed screen
+        GAME_CLEAR: "gameClear",     // final screen with button
+        DEATH: "death",              // death screen with button(s)
+    };
+
+    let uiPhase = UI_PHASE.PLAYING;
+    let uiTimer = 0; // seconds left for timed overlays
+    let pendingAction = null; // "nextLevel" | "finish" | null
+
+    let uiButtons = {}; // { primary: {x,y,w,h}, secondary: {..} }
 
     let passedLevels = []
     let passed_count = 0
@@ -69,22 +83,49 @@ export function Game2D(endGameFunc) {
         },
 
         next_level(game) {
-            alert("Great Job, lets go to next level (:")
-            passed_count+=1
-            StartMiniGame()
+            passed_count += 1;
+
+            const total = getTotalLevelsCount();
+
+            // if that was the final level, go straight to GAME_CLEAR
+            if (passedLevels.length >= total) {
+                uiPhase = UI_PHASE.GAME_CLEAR;
+                pendingAction = "finish";
+            } else {
+                uiPhase = UI_PHASE.LEVEL_CLEAR;
+                uiTimer = 1.2;
+                pendingAction = "nextLevel";
+            }
+
+            game.key.left = game.key.right = game.key.up = false;
+            game.player.vel.x = 0;
+            game.player.vel.y = 0;
         },
 
-        finishGame(_){
-            passedLevels = []
-            alert("Yay! You won!");
-            setHappyEndTrue();
-            StopMiniGame();
+        finishGame(game){
+            // passedLevels = []
+            // alert("Yay! You won!");
+            // setHappyEndTrue();
+            // StopMiniGame();
+            uiPhase = UI_PHASE.GAME_CLEAR;
+            pendingAction = "finish";
+
+            game.key.left = game.key.right = game.key.up = false;
+            game.player.vel.x = 0;
+            game.player.vel.y = 0;
         },
 
         death(game) {
-            alert("You died!");
+            // alert("You died!");
+            // setHappyEndFalse();
+            // StopMiniGame();
+            uiPhase = UI_PHASE.DEATH;
+            pendingAction = "death";
             setHappyEndFalse();
-            StopMiniGame();
+
+            game.key.left = game.key.right = game.key.up = false;
+            game.player.vel.x = 0;
+            game.player.vel.y = 0;
         },
 
         unlock(game) {
@@ -92,6 +133,15 @@ export function Game2D(endGameFunc) {
             game.current_map.keys[10].colour = "#888";
         }
     });
+
+
+    let mouse = null;
+
+    function mouseIsInsideBtn(btn) {
+        if (!mouse || !btn) return false;
+        return mouse.x >= btn.x && mouse.x <= btn.x + btn.w && mouse.y >= btn.y && mouse.y <= btn.y + btn.h;
+    }
+
 
 
     function getFreshMap() {
@@ -674,16 +724,67 @@ export function Game2D(endGameFunc) {
         context.fill();
     };
 
-    Clarity.prototype.update = function () {
+    // Clarity.prototype.update = function () {
+    //
+    //     this.update_player();
+    // };
 
+    Clarity.prototype.update = function () {
+        // pause physics/input while overlays are active
+        if (uiPhase !== UI_PHASE.PLAYING) return;
         this.update_player();
     };
 
     Clarity.prototype.draw = function (context) {
-
         this.draw_map(context, false);
         this.draw_player(context);
+
+        const vW = this.viewport.x;
+        const vH = this.viewport.y;
+
+        uiButtons.primary = null;
+
+        if (uiPhase === UI_PHASE.LEVEL_CLEAR) {
+            drawOverlayPanel(context, vW, vH,
+                "LEVEL COMPLETE",
+                [`Cleared: ${passed_count}`, `Next level loading...`]
+            );
+        }
+
+        if (uiPhase === UI_PHASE.GAME_CLEAR) {
+            drawOverlayPanel(context, vW, vH,
+                "CLEANUP COMPLETE",
+                [`All levels cleared.`, `Total cleared: ${passed_count}`]
+            );
+
+            // single EXIT button
+            const bw = vW * 0.34;
+            const bh = vH * 0.12;
+            const bx = (vW - bw) / 2;
+            const by = vH * 0.70;
+
+            uiButtons.primary = { x: bx, y: by, w: bw, h: bh };
+            drawOverlayButton(context, "EXIT", bx, by, bw, bh, mouseIsInsideBtn(uiButtons.primary));
+        }
+
+        if (uiPhase === UI_PHASE.DEATH) {
+            drawOverlayPanel(context, vW, vH,
+                "SYSTEM FAILURE",
+                [`You got deleted.`, `Levels cleared: ${passed_count}`]
+            );
+
+            // single EXIT button
+            const bw = vW * 0.34;
+            const bh = vH * 0.12;
+            const bx = (vW - bw) / 2;
+            const by = vH * 0.70;
+
+            uiButtons.primary = { x: bx, y: by, w: bw, h: bh };
+            drawOverlayButton(context, "EXIT", bx, by, bw, bh, mouseIsInsideBtn(uiButtons.primary));
+        }
     };
+
+
 
     Clarity.prototype.force_camera_center = function () {
         // Calculate where the camera SHOULD be
@@ -702,6 +803,95 @@ export function Game2D(endGameFunc) {
             this.camera.y = Math.max(0, this.camera.y);
         }
     };
+
+    function drawOverlayPanel(ctx, w, h, title, lines) {
+        const aspect_size = 900 / w;
+
+        ctx.save();
+
+        // backdrop
+        ctx.fillStyle = "rgba(2, 6, 23, 0.78)";
+        ctx.fillRect(0, 0, w, h);
+
+        // panel geometry (safe on all screens)
+        const pw = w * 0.78;
+        const ph = h * 0.42;
+        const px = (w - pw) / 2;
+        const py = (h - ph) / 2;
+
+        // glass panel
+        ctx.fillStyle = "rgba(15, 23, 42, 0.88)";
+        ctx.strokeStyle = "rgba(0, 242, 255, 0.95)";
+        ctx.lineWidth = 2 / aspect_size;
+
+        ctx.shadowBlur = 18 / aspect_size;
+        ctx.shadowColor = "rgba(0, 242, 255, 0.35)";
+
+        ctx.beginPath();
+        ctx.roundRect(px, py, pw, ph, 12 / aspect_size);
+        ctx.fill();
+        ctx.stroke();
+
+        // header separator line (main-game HUD-ish)
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = "rgba(0, 242, 255, 0.35)";
+        ctx.lineWidth = 1 / aspect_size;
+        ctx.beginPath();
+        ctx.moveTo(px + pw * 0.10, py + ph * 0.38);
+        ctx.lineTo(px + pw * 0.90, py + ph * 0.38);
+        ctx.stroke();
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        // title
+        ctx.fillStyle = "rgba(0, 242, 255, 1)";
+        ctx.font = `bold ${Math.round(28 / aspect_size)}px monospace`;
+        ctx.fillText(title, w / 2, py + ph * 0.22);
+
+        // body lines
+        ctx.fillStyle = "rgba(203, 213, 225, 1)";
+        ctx.font = `${Math.round(16 / aspect_size)}px monospace`;
+
+        const lineH = Math.round(22 / aspect_size);
+        const startY = py + ph * 0.58;
+        lines.forEach((t, i) => ctx.fillText(t, w / 2, startY + i * lineH));
+
+        ctx.restore();
+    }
+
+    function drawOverlayButton(ctx, label, x, y, w, h, hover) {
+        const aspect_size = 900 / (x + w + 1); // stable-ish, but not critical
+        ctx.save();
+
+        const stroke = hover ? "rgba(34,197,94,1)" : "rgba(0,242,255,0.95)";
+        const glow = hover ? "rgba(34,197,94,0.35)" : "rgba(0,242,255,0.30)";
+
+        // button panel
+        ctx.fillStyle = "rgba(15, 23, 42, 0.90)";
+        ctx.strokeStyle = stroke;
+        ctx.lineWidth = 2 / aspect_size;
+
+        ctx.shadowBlur = (hover ? 20 : 14) / aspect_size;
+        ctx.shadowColor = glow;
+
+        ctx.beginPath();
+        ctx.roundRect(x, y, w, h, 10 / aspect_size);
+        ctx.fill();
+        ctx.stroke();
+
+        // label
+        ctx.shadowBlur = 0;
+        ctx.fillStyle = "rgba(248, 250, 252, 1)";
+        ctx.font = `bold ${Math.round(18 / (900 / (w * 2.2)))}px monospace`; // size tied to button width
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+        ctx.fillText(label, x + w / 2, y + h / 2);
+
+        ctx.restore();
+    }
+
+
 
     /* Setup of the engine */
 
@@ -789,9 +979,20 @@ export function Game2D(endGameFunc) {
                 steps++;
             }
 
+            if (uiPhase === UI_PHASE.LEVEL_CLEAR) {
+                uiTimer -= frameTime / 1000;
+                if (uiTimer <= 0) {
+                    uiPhase = UI_PHASE.PLAYING;
+                    pendingAction = null;
+                    StartMiniGame(); // loads next level
+                    return; // important: stop this frame chain, StartMiniGame restarts loop cleanly
+                }
+            }
+
             // ---- render (can be 60/144/whatever) ----
             ctx.fillStyle = "#333";
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            // ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillRect(0, 0, game.viewport.x, game.viewport.y);
 
             game.draw(ctx);
 
@@ -816,7 +1017,7 @@ export function Game2D(endGameFunc) {
 
         const newMap = getFreshMap();
         if(!newMap) {
-            return ACTIONS.finishGame(game)
+            ACTIONS.finishGame(game)
         }
         game.load_map(newMap);
         game.limit_viewport = true;
@@ -834,13 +1035,70 @@ export function Game2D(endGameFunc) {
         startMiniLoop();
     };
 
+    function resetMiniGameState() {
+        // reset UI
+        uiPhase = UI_PHASE.PLAYING;
+        uiTimer = 0;
+        pendingAction = null;
+        uiButtons.primary = null;
+
+        // reset progress
+        passedLevels = [];
+        passed_count = 0;
+
+        // reset flags
+        setHappyEndFalse();
+
+        // reset input/motion (safe)
+        if (game) {
+            game.key.left = game.key.right = game.key.up = false;
+            game.player.vel.x = 0;
+            game.player.vel.y = 0;
+            game.last_tile = null;
+        }
+
+        centeredCamera = false;
+    }
+
+
     function StopMiniGame() {
         game.running = false;
         game.detachControls();
         stopMiniLoop();
+
+        // report result to main game (how you already do it)
         endGameFunc(passed_count);
-        passed_count = 0
     }
+
+
+    canvas.addEventListener("mousemove", (e) => {
+        const r = canvas.getBoundingClientRect();
+
+        const xCss = e.clientX - r.left;
+        const yCss = e.clientY - r.top;
+
+        mouse = {
+            x: xCss * (game.viewport.x / r.width),
+            y: yCss * (game.viewport.y / r.height),
+        };
+    });
+
+
+    canvas.addEventListener("mouseleave", () => { mouse = null; });
+
+    canvas.addEventListener("click", () => {
+        // EXIT button on both GAME_CLEAR and DEATH
+        if (uiPhase === UI_PHASE.GAME_CLEAR || uiPhase === UI_PHASE.DEATH) {
+            if (uiButtons.primary && mouseIsInsideBtn(uiButtons.primary)) {
+                // happyEnd only true if you cleared all levels; death keeps it false
+                if (uiPhase === UI_PHASE.GAME_CLEAR) setHappyEndTrue();
+
+                resetMiniGameState(); // important: wipe state BEFORE returning
+                StopMiniGame();
+                return;
+            }
+        }
+    });
 
 
 
@@ -850,7 +1108,6 @@ export function Game2D(endGameFunc) {
         game,
         StartMiniGame: StartMiniGame,
         isHappyEnd: () => happyEnd
-
     }
 }
 

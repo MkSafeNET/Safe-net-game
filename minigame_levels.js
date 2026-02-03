@@ -17,6 +17,10 @@ export function getRandomLevel(passed_levels = []) {
     }
 }
 
+export function getTotalLevelsCount() {
+    return Object.keys(Minigame_levels).length;
+}
+
 
 const Minigame_levels = {
     level1: [

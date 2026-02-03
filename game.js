@@ -40,9 +40,16 @@ const INTRO_PHASE = "intro"
 const PLAYING_PHASE = "playing"
 const SUCCESS_PHASE = "success"
 const RETRY_PROMPT_PHASE = "retryPrompt"
+const BONUS_INTRO_PHASE = "bonusIntro";
 const BONUS_ROUND_PHASE = "bonusRound"
 const FINAL_GAME_OVER_PHASE = "finalGameOver"
+const MINIGAME_INTRO_PHASE = "minigameIntro";
 // const MINI_GAME_PHASE = "miniGame"
+
+const MINIGAME_REASON = {
+    TRAINING_COMPLETE: "trainingComplete",
+    BONUS_PERFECT: "bonusPerfect",
+};
 
 const SYMBOLS = "!@#$%&*"
 
@@ -102,13 +109,18 @@ const MAX_SUCCESS_WAVES = 3
 let successSequence = 0
 
 
-const WAVE_TARGET = 10;
+const WAVE_TARGET = 2;
 
 let introButton = null
+
+let bonusIntroButton = null;
 
 let restartButton = null
 
 let mouseData = null
+
+let minigameReason = null;
+let minigameIntroButton = null;
 
 let bonusQuestions = [...questions[CURRENT_GAME_LANGUAGE]];
 
@@ -286,18 +298,18 @@ function shuffleArray(arr) {
 
 function startGame() {
 
-    reallySafePasswords = [];
-    safePasswords = [];
-    notSafePasswords = [];
-    passwordChoices = [];
-    currentImages = [];
+    // reallySafePasswords = [];
+    // safePasswords = [];
+    // notSafePasswords = [];
+    // passwordChoices = [];
+    // currentImages = [];
 
     points = 0;
     successSequence = 0;
     timeElapsed = 0;
     gameEnded = false;
 
-    gamePhase = INTRO_PHASE;
+    gamePhase = MINIGAME_INTRO_PHASE;
 
     gameRunning = true;
     lastTime = Date.now();
@@ -463,6 +475,11 @@ function update() {
 
     if (info.open) return;
 
+    if (gamePhase === MINIGAME_INTRO_PHASE) return;
+    if (gamePhase === INTRO_PHASE) return;
+    if (gamePhase === BONUS_INTRO_PHASE) return;
+
+
     if (gamePhase === BONUS_ROUND_PHASE) {
         return
     }
@@ -483,7 +500,7 @@ function update() {
                 successSequence += 1
             } else {
                 gamePhase = RETRY_PROMPT_PHASE
-                successSequence = 0
+                // successSequence = 0
             }
         }
     }
@@ -493,7 +510,11 @@ function update() {
 
         if (phaseTimer <= 0) {
             if (successSequence >= MAX_SUCCESS_WAVES) {
-                startMiniGame()
+                // startMiniGame()
+                minigameReason = MINIGAME_REASON.TRAINING_COMPLETE;
+                gamePhase = MINIGAME_INTRO_PHASE;
+                gameRunning = true;     // keep drawing
+                lastTime = Date.now();  // prevents delta spike
             } else {
                 resetMainGame()
             }
@@ -571,6 +592,20 @@ function draw() {
         return
     }
 
+    if (gamePhase === BONUS_INTRO_PHASE) {
+        drawBonusIntroScreen(vWidth, vHeight, aspect_size);
+        drawLanguageToggle(vWidth, vHeight, aspect_size);
+        if (blurred) ctx.restore();
+        return;
+    }
+
+    if (gamePhase === MINIGAME_INTRO_PHASE) {
+        drawMinigameIntroScreen(vWidth, vHeight, aspect_size);
+        drawLanguageToggle(vWidth, vHeight, aspect_size);
+        if (blurred) ctx.restore();
+        return;
+    }
+
     if (gamePhase === RETRY_PROMPT_PHASE) {
         drawRetryPrompt(vWidth, vHeight, aspect_size)
         drawLanguageToggle(vWidth, vHeight, aspect_size)
@@ -606,11 +641,10 @@ function draw() {
 
     drawTotalTimer(vWidth, vHeight, aspect_size)
 
+    drawLanguageToggle(vWidth, vHeight, aspect_size)
     if (blurred) {
         ctx.restore()
     }
-
-    drawLanguageToggle(vWidth, vHeight, aspect_size)
 
     drawInfoButton(vWidth, vHeight, aspect_size)
 }
@@ -682,7 +716,6 @@ function drawSuccessScreen(vWidth, vHeight) {
     );
 }
 
-
 function drawRetryPrompt(vWidth, vHeight, aspect_size) {
 
     const bgGrad = ctx.createRadialGradient(vWidth / 2, vHeight / 2, 10, vWidth / 2, vHeight / 2, vWidth);
@@ -727,6 +760,35 @@ function drawRetryPrompt(vWidth, vHeight, aspect_size) {
     drawCyberButton(
         UI_TEXT.RETRY_SCREEN_TERMINATE_BUTTON_TEXT[CURRENT_GAME_LANGUAGE], vWidth / 2 + button_spacing, vHeight * 0.56, buttonW, buttonH, false, aspect_size
     );
+}
+
+function drawBonusIntroScreen(vWidth, vHeight, aspect_size) {
+    const bgGrad = ctx.createRadialGradient(vWidth / 2, vHeight / 2, 10, vWidth / 2, vHeight / 2, vWidth);
+    bgGrad.addColorStop(0, "#0f172a");
+    bgGrad.addColorStop(1, "#020617");
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, vWidth, vHeight);
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    ctx.fillStyle = "#00f2ff";
+    ctx.font = `bold ${Math.round(28 / aspect_size)}px monospace`;
+    ctx.fillText("DECRYPTION WARNING", vWidth / 2, vHeight * 0.30);
+
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = `${Math.round(16 / aspect_size)}px monospace`;
+    ctx.fillText("You are about to enter the bonus round.", vWidth / 2, vHeight * 0.40);
+    ctx.fillText("Answer 5 questions. 3+ correct to continue.", vWidth / 2, vHeight * 0.46);
+
+    const w = vWidth * 0.40;
+    const h = Math.round(60 / aspect_size);
+    const x = (vWidth - w) / 2;
+    const y = vHeight * 0.62;
+
+    bonusIntroButton = { x, y, w, h };
+
+    drawCyberButton("START DECRYPTION", x, y, w, h, true, aspect_size);
 }
 
 function drawCyberButton(text, x, y, w, h, primary, aspect_size) {
@@ -856,6 +918,59 @@ function drawGameOver(vWidth, vHeight, aspect_size) {
     ctx.fillText(UI_TEXT.GAME_OVER_BUTTON_TEXT[CURRENT_GAME_LANGUAGE], vWidth / 2, btnY + btnH / 2);
     ctx.restore()
 }
+
+function drawMinigameIntroScreen(vWidth, vHeight, aspect_size) {
+    // Background
+    const bgGrad = ctx.createRadialGradient(vWidth / 2, vHeight / 2, 10, vWidth / 2, vHeight / 2, vWidth);
+    bgGrad.addColorStop(0, "#0f172a");
+    bgGrad.addColorStop(1, "#020617");
+    ctx.fillStyle = bgGrad;
+    ctx.fillRect(0, 0, vWidth, vHeight);
+
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    // Title + text depends on why we are here
+    let title = "CLEANUP MISSION UNLOCKED";
+    let line1 = "You are ready to start the cleanup mission.";
+    let line2 = "Press the button to deploy.";
+
+    if (minigameReason === MINIGAME_REASON.BONUS_PERFECT) {
+        title = "PERFECT DECRYPTION // ACCESS GRANTED";
+        line1 = "All answers correct.";
+        line2 = "Immediate deployment authorized.";
+    } else if (minigameReason === MINIGAME_REASON.TRAINING_COMPLETE) {
+        title = "TRAINING COMPLETE // MISSION READY";
+        line1 = "Training waves completed.";
+        line2 = "Cleanup mission is now available.";
+    }
+
+    // Header
+    ctx.save();
+    ctx.fillStyle = "#00f2ff";
+    ctx.shadowBlur = 14 / aspect_size;
+    ctx.shadowColor = "#00f2ff";
+    ctx.font = `bold ${Math.round(28 / aspect_size)}px monospace`;
+    ctx.fillText(title, vWidth / 2, vHeight * 0.30);
+    ctx.restore();
+
+    // Body text
+    ctx.fillStyle = "#94a3b8";
+    ctx.font = `${Math.round(16 / aspect_size)}px monospace`;
+    ctx.fillText(line1, vWidth / 2, vHeight * 0.42);
+    ctx.fillText(line2, vWidth / 2, vHeight * 0.48);
+
+    // Button
+    const w = vWidth * 0.42;
+    const h = Math.round(60 / aspect_size);
+    const x = (vWidth - w) / 2;
+    const y = vHeight * 0.63;
+
+    minigameIntroButton = { x, y, w, h };
+
+    drawCyberButton("START CLEANUP MISSION", x, y, w, h, true, aspect_size);
+}
+
 
 /** Functions that draw the instruction text, NOTE: vWidth and vHeight are used AND NOT canvas.width and canvas.height because
  * of screens having higher DPI so canvas needs to be scaled
@@ -1726,10 +1841,17 @@ function endBonusRound() {
         resetMainGame()
     } else if (bonusScore === 5) {
         // points += bonusScore;
-        startMiniGame()
+
+
+        // startMiniGame()
+        minigameReason = MINIGAME_REASON.BONUS_PERFECT;
+        gamePhase = MINIGAME_INTRO_PHASE;
+        timeLeft = Infinity;
+        lastTime = Date.now();
     }
 
     else {
+        successSequence = 0
         gamePhase = FINAL_GAME_OVER_PHASE
     }
 }
@@ -1933,6 +2055,21 @@ canvas.addEventListener("click", (e) => {
         })
     }
 
+    if (gamePhase === BONUS_INTRO_PHASE && bonusIntroButton) {
+        if (isInside(mx, my, bonusIntroButton.x, bonusIntroButton.y, bonusIntroButton.w, bonusIntroButton.h)) {
+            startBonusRound();
+            return;
+        }
+    }
+
+    if (gamePhase === MINIGAME_INTRO_PHASE && minigameIntroButton) {
+        if (isInside(mx, my, minigameIntroButton.x, minigameIntroButton.y, minigameIntroButton.w, minigameIntroButton.h)) {
+            // clear hitbox so we don't accidentally reuse it
+            minigameIntroButton = null;
+            startMiniGame();
+            return;
+        }
+    }
 
     if (gamePhase === RETRY_PROMPT_PHASE) {
 
@@ -1942,7 +2079,8 @@ canvas.addEventListener("click", (e) => {
 
         if (isInside(mx, my, vWidth / 2 - buttonW - button_spacing, vHeight * 0.56, buttonW, buttonH)) {
 
-            startBonusRound()
+            // startBonusRound()
+            gamePhase = BONUS_INTRO_PHASE;
             return
         }
 
