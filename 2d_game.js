@@ -27,8 +27,9 @@ import {resizeMiniGameCanvas} from "./resizeMiniGame.js";
 import {getRandomLevel} from "./minigame_levels.js";
 import {getTotalLevelsCount} from "./minigame_levels.js";
 import {UI_TEXT} from "./data/ui_text.js";
+import {CURRENT_GAME_LANGUAGE} from "./game.js";
 
-export function Game2D(endGameFunc,CURRENT_GAME_LANGUAGE) {
+export function Game2D(endGameFunc) {
     const UI_PHASE = {
         PLAYING: "playing",
         LEVEL_CLEAR: "levelClear",   // timed screen
@@ -1020,6 +1021,9 @@ export function Game2D(endGameFunc,CURRENT_GAME_LANGUAGE) {
         const newMap = getFreshMap();
         if(!newMap) {
             ACTIONS.finishGame(game)
+            game.running = true;
+            StartMiniGame()
+            return
         }
         game.load_map(newMap);
         game.limit_viewport = true;
@@ -1108,8 +1112,7 @@ export function Game2D(endGameFunc,CURRENT_GAME_LANGUAGE) {
         canvas,
         ctx,
         game,
-        StartMiniGame: StartMiniGame,
-        isHappyEnd: () => happyEnd
+        StartMiniGame: StartMiniGame
     }
 }
 

@@ -64,7 +64,7 @@ const LANG_LIST = [
 
 let langIndex = 1
 
-let CURRENT_GAME_LANGUAGE = LANG_LIST[langIndex]
+export let CURRENT_GAME_LANGUAGE = LANG_LIST[langIndex]
 
 let langButtonArea = {}
 
@@ -1664,7 +1664,7 @@ function drawIntroScreen(vWidth, vHeight, aspect_size) {
 
     const lineH = Math.round(26 / aspect_size);
     let startY = vHeight * 0.40;
-    lines.forEach((t, i) => ctx.fillText(t, vWidth/2, startY + i * lineH));
+    lines.forEach((t, i) => ctx.fillText(t+"", vWidth/2, startY + i * lineH));
 
     // Button
     const w = vWidth * 0.35;
