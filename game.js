@@ -774,12 +774,12 @@ function drawBonusIntroScreen(vWidth, vHeight, aspect_size) {
 
     ctx.fillStyle = "#00f2ff";
     ctx.font = `bold ${Math.round(28 / aspect_size)}px monospace`;
-    ctx.fillText("DECRYPTION WARNING", vWidth / 2, vHeight * 0.30);
+    ctx.fillText(UI_TEXT.BONUS_INTRO_TITLE[CURRENT_GAME_LANGUAGE], vWidth / 2, vHeight * 0.30);
 
     ctx.fillStyle = "#94a3b8";
     ctx.font = `${Math.round(16 / aspect_size)}px monospace`;
-    ctx.fillText("You are about to enter the bonus round.", vWidth / 2, vHeight * 0.40);
-    ctx.fillText("Answer 5 questions. 3+ correct to continue.", vWidth / 2, vHeight * 0.46);
+    ctx.fillText(UI_TEXT.BONUS_INTRO_LINE_1[CURRENT_GAME_LANGUAGE], vWidth / 2, vHeight * 0.40);
+    ctx.fillText(UI_TEXT.BONUS_INTRO_LINE_2[CURRENT_GAME_LANGUAGE], vWidth / 2, vHeight * 0.46);
 
     const w = vWidth * 0.40;
     const h = Math.round(60 / aspect_size);
@@ -788,7 +788,7 @@ function drawBonusIntroScreen(vWidth, vHeight, aspect_size) {
 
     bonusIntroButton = { x, y, w, h };
 
-    drawCyberButton("START DECRYPTION", x, y, w, h, true, aspect_size);
+    drawCyberButton(UI_TEXT.BONUS_INTRO_BUTTON_TEXT[CURRENT_GAME_LANGUAGE], x, y, w, h, true, aspect_size);
 }
 
 function drawCyberButton(text, x, y, w, h, primary, aspect_size) {
@@ -1021,6 +1021,7 @@ function drawInstructions(vWidth, vHeight, aspect_size) {
 //     ctx.lineTo(text_x - (5 / aspect_size), text_y + (10 / aspect_size));
 //     ctx.lineTo(text_x + (10 / aspect_size), text_y + (10 / aspect_size));
 //     ctx.stroke();
+//
 //
 //     // 2. Draw the Score Text
 //     ctx.fillStyle = "#00f2ff";

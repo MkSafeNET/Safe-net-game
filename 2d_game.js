@@ -26,6 +26,7 @@ THE SOFTWARE.
 import {resizeMiniGameCanvas} from "./resizeMiniGame.js";
 import {getRandomLevel} from "./minigame_levels.js";
 import {getTotalLevelsCount} from "./minigame_levels.js";
+import {UI_TEXT} from "./data/ui_text.js";
 
 export function Game2D(endGameFunc) {
 
@@ -745,16 +746,18 @@ export function Game2D(endGameFunc) {
         uiButtons.primary = null;
 
         if (uiPhase === UI_PHASE.LEVEL_CLEAR) {
+            let CURRENT_GAME_LANGUAGE="mk";
             drawOverlayPanel(context, vW, vH,
-                "LEVEL COMPLETE",
-                [`Cleared: ${passed_count}`, `Next level loading...`]
+                UI_TEXT.D2_GAME_LEVEL_CLEAR_TITLE[CURRENT_GAME_LANGUAGE],
+                [UI_TEXT.D2_GAME_LEVEL_CLEAR_LINES[CURRENT_GAME_LANGUAGE][0]+` ${passed_count}`, UI_TEXT.D2_GAME_LEVEL_CLEAR_LINES[CURRENT_GAME_LANGUAGE][1]]
             );
         }
 
         if (uiPhase === UI_PHASE.GAME_CLEAR) {
+            let CURRENT_GAME_LANGUAGE= 'mk';
             drawOverlayPanel(context, vW, vH,
-                "CLEANUP COMPLETE",
-                [`All levels cleared.`, `Total cleared: ${passed_count}`]
+                UI_TEXT.D2_GAME_GAME_CLEAR_TITLE[CURRENT_GAME_LANGUAGE],
+                [UI_TEXT.D2_GAME_GAME_CLEAR_LINES[CURRENT_GAME_LANGUAGE][0], UI_TEXT.D2_GAME_GAME_CLEAR_LINES[CURRENT_GAME_LANGUAGE][1]+` ${passed_count}`]
             );
 
             // single EXIT button
@@ -764,13 +767,14 @@ export function Game2D(endGameFunc) {
             const by = vH * 0.70;
 
             uiButtons.primary = { x: bx, y: by, w: bw, h: bh };
-            drawOverlayButton(context, "EXIT", bx, by, bw, bh, mouseIsInsideBtn(uiButtons.primary));
+            drawOverlayButton(context, UI_TEXT.EXIT[CURRENT_GAME_LANGUAGE], bx, by, bw, bh, mouseIsInsideBtn(uiButtons.primary));
         }
 
         if (uiPhase === UI_PHASE.DEATH) {
+            let CURRENT_GAME_LANGUAGE="mk";
             drawOverlayPanel(context, vW, vH,
-                "SYSTEM FAILURE",
-                [`You got deleted.`, `Levels cleared: ${passed_count}`]
+                UI_TEXT.D2_GAME_DEATH_TITLE[CURRENT_GAME_LANGUAGE],
+                [UI_TEXT.D2_GAME_DEATH_LINES[CURRENT_GAME_LANGUAGE][0], UI_TEXT.D2_GAME_DEATH_LINES[CURRENT_GAME_LANGUAGE][1]+` ${passed_count}`]
             );
 
             // single EXIT button
@@ -780,7 +784,7 @@ export function Game2D(endGameFunc) {
             const by = vH * 0.70;
 
             uiButtons.primary = { x: bx, y: by, w: bw, h: bh };
-            drawOverlayButton(context, "EXIT", bx, by, bw, bh, mouseIsInsideBtn(uiButtons.primary));
+            drawOverlayButton(context, UI_TEXT.EXIT[CURRENT_GAME_LANGUAGE], bx, by, bw, bh, mouseIsInsideBtn(uiButtons.primary));
         }
     };
 
