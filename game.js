@@ -628,7 +628,7 @@ function draw() {
         return
     }
 
-    drawInstructions(vWidth, vHeight, aspect_size)
+    drawInstructions(vWidth, vHeight+100, aspect_size)
     // drawScore(vWidth, aspect_size)
     drawScoreBar(vWidth, aspect_size)
     drawTimer(vWidth, vHeight, aspect_size)
@@ -1001,7 +1001,8 @@ function drawInstructions(vWidth, vHeight, aspect_size) {
     ctx.fillStyle = "#00f2ff";
 
     // We add "> " to make it look like a command line
-    ctx.fillText("> SELECT_SAFER_PROTOCOL", vWidth / 2, yPos);
+    //ctx.fillText("> SELECT_SAFER_PROTOCOL", vWidth / 2, yPos);
+    ctx.fillText(UI_TEXT.INSTRUCTIONS_TEXT[CURRENT_GAME_LANGUAGE], vWidth / 2, yPos);
 
     ctx.restore();
 }
@@ -1050,7 +1051,7 @@ function drawScoreBar(vWidth, aspect_size) {
     ctx.font = `bold ${Math.round(SCORE_FONT_SIZE / aspect_size)}px "Courier New", monospace`;
     ctx.textAlign = "left";
     ctx.textBaseline = "bottom";
-    ctx.fillText(`TRAINING ${Math.round(p * 100)}%`, x, y - (6 / aspect_size));
+    ctx.fillText(`${UI_TEXT.TRAINING[CURRENT_GAME_LANGUAGE]} ${Math.round(p * 100)}%`, x, y - (6 / aspect_size));
 
     // bar background
     ctx.fillStyle = "rgba(15,23,42,0.9)";
