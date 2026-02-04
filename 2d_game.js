@@ -197,7 +197,7 @@ export function Game2D(endGameFunc) {
             ],
 
             /* An array representing the map tiles. Each number corresponds to a key */
-            data: level,
+            data: structuredClone(level),
 
             /* Default gravity of the map */
 

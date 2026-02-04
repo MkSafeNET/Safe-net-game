@@ -979,7 +979,6 @@ function drawInstructions(vWidth, vHeight, aspect_size) {
     ctx.save();
 
     const scaleFont = Math.round(INSTRUCTION_TEXT_FONT_SIZE / aspect_size);
-    // const yPos = vHeight * 0.15;
     const yPos = vHeight * 0.15 - (40 / aspect_size);
 
     // 1. Draw a subtle "Underline" or accent bar
@@ -990,50 +989,20 @@ function drawInstructions(vWidth, vHeight, aspect_size) {
     ctx.lineTo(vWidth * 0.7, yPos + (15 / aspect_size));
     ctx.stroke();
 
-    // 2. Mission Text with a "Terminal" prefix
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.font = `bold ${scaleFont}px "Courier New", Courier, monospace`;
 
-    // Glowing Effect
     ctx.shadowBlur = 8 / aspect_size;
     ctx.shadowColor = "#00f2ff";
     ctx.fillStyle = "#00f2ff";
 
-    // We add "> " to make it look like a command line
     //ctx.fillText("> SELECT_SAFER_PROTOCOL", vWidth / 2, yPos);
     ctx.fillText(UI_TEXT.INSTRUCTIONS_TEXT[CURRENT_GAME_LANGUAGE], vWidth / 2, yPos);
 
     ctx.restore();
 }
 
-// /** Function that draws the Score */
-// function drawScore(vWidth, aspect_size) {
-//     ctx.save();
-//     let font_size = Math.round(SCORE_FONT_SIZE / aspect_size);
-//     const text_x = 20 / aspect_size;
-//     const text_y = 35 / aspect_size;
-//
-//     // 1. Draw a small decorative HUD bracket behind the points
-//     ctx.strokeStyle = "#00f2ff";
-//     ctx.lineWidth = 2 / aspect_size;
-//     ctx.beginPath();
-//     ctx.moveTo(text_x - (5 / aspect_size), text_y - (15 / aspect_size));
-//     ctx.lineTo(text_x - (5 / aspect_size), text_y + (10 / aspect_size));
-//     ctx.lineTo(text_x + (10 / aspect_size), text_y + (10 / aspect_size));
-//     ctx.stroke();
-//
-//
-//     // 2. Draw the Score Text
-//     ctx.fillStyle = "#00f2ff";
-//     ctx.font = `bold ${font_size}px "Courier New", Courier, monospace`;
-//     ctx.textAlign = "left";
-//
-//     // Use padding to move text away from the bracket
-//     ctx.fillText("SCORE_" + points.toString().padStart(4, '0'), text_x + (5 / aspect_size), text_y);
-//
-//     ctx.restore();
-// }
 
 function drawScoreBar(vWidth, aspect_size) {
     const x = 20 / aspect_size;
