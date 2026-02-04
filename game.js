@@ -109,7 +109,7 @@ const MAX_SUCCESS_WAVES = 3
 let successSequence = 0
 
 
-const WAVE_TARGET = 2;
+const WAVE_TARGET = 10;
 
 let introButton = null
 
