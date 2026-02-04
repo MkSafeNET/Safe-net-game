@@ -132,7 +132,7 @@ const unsafeImages = []
 const MAX_IMAGES_TO_CHECK_GOOD = 20
 const MAX_IMAGES_TO_CHECK_BAD = 20
 
-const {game: game, canvas: canvas2D, ctx: ctx2D, StartMiniGame} = Game2D(endMiniGame)
+const {game: game, canvas: canvas2D, ctx: ctx2D, StartMiniGame} = Game2D(endMiniGame,CURRENT_GAME_LANGUAGE)
 
 const info = {
     x: canvas.width - 40,

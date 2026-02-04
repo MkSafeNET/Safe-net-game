@@ -28,8 +28,7 @@ import {getRandomLevel} from "./minigame_levels.js";
 import {getTotalLevelsCount} from "./minigame_levels.js";
 import {UI_TEXT} from "./data/ui_text.js";
 
-export function Game2D(endGameFunc) {
-
+export function Game2D(endGameFunc,CURRENT_GAME_LANGUAGE) {
     const UI_PHASE = {
         PLAYING: "playing",
         LEVEL_CLEAR: "levelClear",   // timed screen
@@ -746,7 +745,7 @@ export function Game2D(endGameFunc) {
         uiButtons.primary = null;
 
         if (uiPhase === UI_PHASE.LEVEL_CLEAR) {
-            let CURRENT_GAME_LANGUAGE="mk";
+
             drawOverlayPanel(context, vW, vH,
                 UI_TEXT.D2_GAME_LEVEL_CLEAR_TITLE[CURRENT_GAME_LANGUAGE],
                 [UI_TEXT.D2_GAME_LEVEL_CLEAR_LINES[CURRENT_GAME_LANGUAGE][0]+` ${passed_count}`, UI_TEXT.D2_GAME_LEVEL_CLEAR_LINES[CURRENT_GAME_LANGUAGE][1]]
@@ -754,7 +753,7 @@ export function Game2D(endGameFunc) {
         }
 
         if (uiPhase === UI_PHASE.GAME_CLEAR) {
-            let CURRENT_GAME_LANGUAGE= 'mk';
+
             drawOverlayPanel(context, vW, vH,
                 UI_TEXT.D2_GAME_GAME_CLEAR_TITLE[CURRENT_GAME_LANGUAGE],
                 [UI_TEXT.D2_GAME_GAME_CLEAR_LINES[CURRENT_GAME_LANGUAGE][0], UI_TEXT.D2_GAME_GAME_CLEAR_LINES[CURRENT_GAME_LANGUAGE][1]+` ${passed_count}`]
@@ -771,7 +770,6 @@ export function Game2D(endGameFunc) {
         }
 
         if (uiPhase === UI_PHASE.DEATH) {
-            let CURRENT_GAME_LANGUAGE="mk";
             drawOverlayPanel(context, vW, vH,
                 UI_TEXT.D2_GAME_DEATH_TITLE[CURRENT_GAME_LANGUAGE],
                 [UI_TEXT.D2_GAME_DEATH_LINES[CURRENT_GAME_LANGUAGE][0], UI_TEXT.D2_GAME_DEATH_LINES[CURRENT_GAME_LANGUAGE][1]+` ${passed_count}`]
