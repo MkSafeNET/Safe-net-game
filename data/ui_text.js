@@ -203,8 +203,8 @@ UI_TEXT.EXIT[GAME_LANGUAGES.ENGLISH_LANGUAGE] = "EXIT";
 UI_TEXT.D2_GAME_DEATH_TITLE[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = "ПРИСТАПИ ДО ОШТЕТЕН ПОДАТОК";
 UI_TEXT.D2_GAME_DEATH_LINES[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = ["Вирусот не е пронајден.", "Успешно пребарани датотеки:"];
 
-UI_TEXT.D2_GAME_GAME_CLEAR_TITLE[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = "УСПЕШНО ГИ ПРЕБАРА СИТЕ ДАТОТЕКИ";
-UI_TEXT.D2_GAME_GAME_CLEAR_LINES[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = ["Сите нивоа се исчистени.","Успешно пребарани датотеки: "];
+UI_TEXT.D2_GAME_GAME_CLEAR_TITLE[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = "ВИРУСОТ Е УНИШТЕН";
+UI_TEXT.D2_GAME_GAME_CLEAR_LINES[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = ["Вирусот е пронајден во сите датотеки.","Успешно пребарани датотеки: "];
 
 UI_TEXT.D2_GAME_LEVEL_CLEAR_TITLE[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = "УСПЕШНО ПРОНАЈДЕН ВИРУС ВО ДАТОТЕКАТА";
 UI_TEXT.D2_GAME_LEVEL_CLEAR_LINES[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = ["Успешно пребарани датотеки: ","Следната датотека се вчитува..."];
