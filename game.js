@@ -628,7 +628,7 @@ function draw() {
         return
     }
 
-    drawInstructions(vWidth, vHeight+100, aspect_size)
+    drawInstructions(vWidth, vHeight+(100 / aspect_size), aspect_size)
     // drawScore(vWidth, aspect_size)
     drawScoreBar(vWidth, aspect_size)
     drawTimer(vWidth, vHeight, aspect_size)
