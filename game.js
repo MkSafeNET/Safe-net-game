@@ -942,8 +942,17 @@ function drawMinigameIntroScreen(vWidth, vHeight, aspect_size) {
     } else if (minigameReason === MINIGAME_REASON.TRAINING_COMPLETE) {
         title = UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_TITLE[CURRENT_GAME_LANGUAGE];
         line1 = UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_1[CURRENT_GAME_LANGUAGE];
-        line2 = UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_2[CURRENT_GAME_LANGUAGE];
+        // line2 = UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_2[CURRENT_GAME_LANGUAGE];
+        line2=UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_2[CURRENT_GAME_LANGUAGE];
+
     }
+
+    const lines = line2.split("\n");
+
+
+    const lineH = Math.round(28 / aspect_size);
+    let startY = vHeight * 0.47;
+    //lines.forEach((t, i) => ctx.fillText(t+"", vWidth/2, startY + i * lineH));
 
     // Header
     ctx.save();
@@ -958,7 +967,8 @@ function drawMinigameIntroScreen(vWidth, vHeight, aspect_size) {
     ctx.fillStyle = "#94a3b8";
     ctx.font = `${Math.round(16 / aspect_size)}px monospace`;
     ctx.fillText(line1, vWidth / 2, vHeight * 0.42);
-    ctx.fillText(line2, vWidth / 2, vHeight * 0.48);
+    lines.forEach((t, i) => ctx.fillText(t+"", vWidth/2, startY + i * lineH));
+    //ctx.fillText(line2, vWidth / 2, vHeight * 0.48);
 
     // Button
     const w = vWidth * 0.42;

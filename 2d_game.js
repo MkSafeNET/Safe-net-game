@@ -187,13 +187,13 @@ export function Game2D(endGameFunc) {
                     fore: 1
                 },
                 {id: 4, colour: '#777', jump: 1},
-                {id: 5, colour: '#E373FA', solid: 1, bounce: 1.1},
+                {id: 5, colour: '#5f039f', solid: 1, bounce: 1.1},
                 {id: 6, colour: '#666', solid: 1, bounce: 0},
                 {id: 7, colour: '#73C6FA', solid: 0, action: 'change_colour'},
                 {id: 8, colour: '#FADF73', solid: 0, action: 'next_level'},
                 {id: 9, colour: '#C93232', solid: 0, action: 'death'},
                 {id: 10, colour: '#555', solid: 1},
-                {id: 11, colour: '#0FF', solid: 0, action: 'unlock'}
+                {id: 11, colour: '#007aff', solid: 0, action: 'unlock'}
             ],
 
             /* An array representing the map tiles. Each number corresponds to a key */
