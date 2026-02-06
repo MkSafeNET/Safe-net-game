@@ -756,6 +756,24 @@ export function Game2D(endGameFunc) {
     // };
 
     Clarity.prototype.update = function () {
+
+        hoveredFileId = null;
+
+        if (uiPhase === UI_PHASE.FILE_SCAN && mouse) {
+            files.forEach(file => {
+                if (file.completed) return;
+
+                if (
+                    mouse.x >= file.x - file.width / 2 &&
+                    mouse.x <= file.x + file.width / 2 &&
+                    mouse.y >= file.y - file.height / 2 &&
+                    mouse.y <= file.y + file.height / 2
+                ) {
+                    hoveredFileId = file.id;
+                }
+            });
+        }
+
         // pause physics/input while overlays are active
         if (uiPhase !== UI_PHASE.PLAYING) return;
         this.update_player();
@@ -949,7 +967,6 @@ export function Game2D(endGameFunc) {
         const startY = h * 0.35;
 
         if (imagesLoaded < 2) {
-            console.log("ne se vcitani")
             return;
         }
 
@@ -975,8 +992,10 @@ export function Game2D(endGameFunc) {
 
             ctx.save();
 
-            // ✨ HOVER EFFECT
+
             if (hoveredFileId === file.id && !file.completed) {
+
+                console.log(hoveredFileId)
                 ctx.shadowBlur = 20;
                 ctx.shadowColor = "#00f2ff";
                 ctx.strokeStyle = "#00f2ff";
@@ -1215,7 +1234,7 @@ export function Game2D(endGameFunc) {
     });
 
 
-    canvas.addEventListener("mouseleave", () => { mouse = null; });
+    canvas.addEventListener("mouseleave", () => { mouse = null; hoveredFileId = null;});
 
     canvas.addEventListener("click", () => {
         // EXIT button on both GAME_CLEAR and DEATH
@@ -1223,6 +1242,10 @@ export function Game2D(endGameFunc) {
             if (uiButtons.primary && mouseIsInsideBtn(uiButtons.primary)) {
                 // happyEnd only true if you cleared all levels; death keeps it false
                 if (uiPhase === UI_PHASE.GAME_CLEAR) setHappyEndTrue();
+
+                if (uiPhase === UI_PHASE.DEATH){
+                    files.forEach(f => f.completed=false);
+                }
 
                 if(uiPhase === UI_PHASE.LEVEL_CLEAR) {
                         uiPhase = UI_PHASE.FILE_SCAN;
@@ -1247,38 +1270,56 @@ export function Game2D(endGameFunc) {
         }
     });
 
-    canvas.addEventListener("click", (e) => {
-        const rect = canvas.getBoundingClientRect();
-        // const mx = e.clientX - rect.left;
-        // const my = e.clientY - rect.top;
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-
-        const mx = (e.clientX - rect.left) * scaleX;
-        const my = (e.clientY - rect.top) * scaleY;
-
-        hoveredFileId = null;
+    canvas.addEventListener("click", () => {
+        if (!mouse) return;
 
         files.forEach(file => {
             if (file.completed) return;
 
             if (
-                mx >= file.x - file.width / 2 &&
-                mx <= file.x + file.width / 2 &&
-                my >= file.y - file.height / 2 &&
-                my <= file.y + file.height / 2
+                mouse.x >= file.x - file.width / 2 &&
+                mouse.x <= file.x + file.width / 2 &&
+                mouse.y >= file.y - file.height / 2 &&
+                mouse.y <= file.y + file.height / 2
             ) {
-                console.log(file.id);
-                console.log("clicked");
-                uiPhase = UI_PHASE.PLAYING;
-                pendingAction = null;
                 current_file = file.id;
-                // startMiniGame(file.id);
+                uiPhase = UI_PHASE.PLAYING;
                 StartMiniGame();
             }
-            console.log("file is not clicked");
         });
     });
+    // canvas.addEventListener("click", (e) => {
+    //     const rect = canvas.getBoundingClientRect();
+    //     // const mx = e.clientX - rect.left;
+    //     // const my = e.clientY - rect.top;
+    //     const scaleX = canvas.width / rect.width;
+    //     const scaleY = canvas.height / rect.height;
+    //
+    //     const mx = (e.clientX - rect.left) * scaleX;
+    //     const my = (e.clientY - rect.top) * scaleY;
+    //
+    //     hoveredFileId = null;
+    //
+    //     files.forEach(file => {
+    //         if (file.completed) return;
+    //
+    //         if (
+    //             mx >= file.x - file.width / 2 &&
+    //             mx <= file.x + file.width / 2 &&
+    //             my >= file.y - file.height / 2 &&
+    //             my <= file.y + file.height / 2
+    //         ) {
+    //             console.log(file.id);
+    //             console.log("clicked");
+    //             uiPhase = UI_PHASE.PLAYING;
+    //             pendingAction = null;
+    //             current_file = file.id;
+    //             // startMiniGame(file.id);
+    //             StartMiniGame();
+    //         }
+    //         console.log("file is not clicked");
+    //     });
+    // });
 
     canvas.addEventListener("mousemove", (e) => {
         const rect = canvas.getBoundingClientRect();
