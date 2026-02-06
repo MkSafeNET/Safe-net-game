@@ -156,15 +156,16 @@ const filesData = [
     { name: "archive.rar", clean: false }
 ];
 const desktopBg = new Image();
-desktopBg.src = "images/Desktop_IMG.jpg";
+desktopBg.src = "images/file_images/Desktop_IMG.jpg";
 
 const cleanIcon = new Image();
-cleanIcon.src = "images/clean.png";
+cleanIcon.src = "images/file_images/clean.png";
 
 const uncleanIcon = new Image();
-uncleanIcon.src = "images/corrupted.png";
+uncleanIcon.src = "images/file_images/corrupted.png";
 
-
+let desktopStartTime = null;
+const DESKTOP_DURATION = 5000;
 
 
 /**
@@ -602,11 +603,22 @@ function draw() {
     }
 
     if (gamePhase === INTRO_PHASE) {
-        drawIntroScreen(vWidth, vHeight, aspect_size)
-        drawLanguageToggle(vWidth, vHeight, aspect_size)
-        // drawDesktop(vWidth, vHeight, aspect_size);
+
+        if (desktopStartTime === null) {
+            desktopStartTime = performance.now();
+        }
+
+        drawIntroScreen(vWidth, vHeight, aspect_size);
+        drawLanguageToggle(vWidth, vHeight, aspect_size);
+
+        const elapsed = performance.now() - desktopStartTime;
+
+        if (elapsed < DESKTOP_DURATION) {
+            drawDesktop(vWidth, vHeight, aspect_size);
+        }
+
         if (blurred) ctx.restore();
-        return
+        return;
     }
 
     if (gamePhase === SUCCESS_PHASE) {
