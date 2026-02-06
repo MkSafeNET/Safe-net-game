@@ -65,8 +65,8 @@ export function Game2D(endGameFunc) {
 
     let current_file = 0; // Tracks if a minigame is open
 
-
-    let uiPhase = UI_PHASE.PLAYING;
+    let file_scan_flag=true;
+    let uiPhase = UI_PHASE.FILE_SCAN;
     let uiTimer = 0; // seconds left for timed overlays
     let pendingAction = null; // "nextLevel" | "finish" | null
 
@@ -793,7 +793,6 @@ export function Game2D(endGameFunc) {
         uiButtons.primary = null;
 
         if (uiPhase === UI_PHASE.LEVEL_CLEAR) {
-
             drawOverlayPanel(context, vW, vH,
                 UI_TEXT.D2_GAME_LEVEL_CLEAR_TITLE[CURRENT_GAME_LANGUAGE],
                 [UI_TEXT.D2_GAME_LEVEL_CLEAR_LINES[CURRENT_GAME_LANGUAGE][0]+` ${passed_count}`, UI_TEXT.D2_GAME_LEVEL_CLEAR_LINES[CURRENT_GAME_LANGUAGE][1]]
@@ -826,6 +825,7 @@ export function Game2D(endGameFunc) {
         }
 
         if (uiPhase === UI_PHASE.DEATH) {
+            file_scan_flag=true;
             drawOverlayPanel(context, vW, vH,
                 UI_TEXT.D2_GAME_DEATH_TITLE[CURRENT_GAME_LANGUAGE],
                 [UI_TEXT.D2_GAME_DEATH_LINES[CURRENT_GAME_LANGUAGE][0], UI_TEXT.D2_GAME_DEATH_LINES[CURRENT_GAME_LANGUAGE][1]+` ${passed_count}`]
@@ -1160,6 +1160,10 @@ export function Game2D(endGameFunc) {
     }
 
     const StartMiniGame = function () {
+        if(file_scan_flag){
+            uiPhase = UI_PHASE.FILE_SCAN;
+            file_scan_flag = false;
+        }
         centeredCamera = false;
 
         console.log(passed_count," - ccc")
@@ -1249,6 +1253,7 @@ export function Game2D(endGameFunc) {
                 if (uiPhase === UI_PHASE.GAME_CLEAR) setHappyEndTrue();
 
                 if (uiPhase === UI_PHASE.DEATH){
+                    file_scan_flag = true;
                     files.forEach(f => f.completed=false);
                 }
 
