@@ -142,6 +142,27 @@ const info = {
     visible: true,
     text: HELP_TEXT[CURRENT_GAME_LANGUAGE]
 }
+const filesData = [
+    { name: "report.docx", clean: true },
+    { name: "image.png", clean: false },
+    { name: "video.mp4", clean: true },
+    { name: "music.mp3", clean: false },
+    { name: "notes.txt", clean: true },
+    { name: "backup.zip", clean: false },
+    { name: "system.dll", clean: false },
+    { name: "data.csv", clean: true },
+    { name: "passwords.pdf", clean: false },
+    { name: "presentation.pptx", clean: true },
+    { name: "archive.rar", clean: true }
+];
+const desktopBg = new Image();
+desktopBg.src = "images/Desktop_IMG.jpg";
+
+const cleanIcon = new Image();
+cleanIcon.src = "images/clean.png";
+
+const uncleanIcon = new Image();
+uncleanIcon.src = "images/unclean.png";
 
 
 
@@ -582,6 +603,7 @@ function draw() {
     if (gamePhase === INTRO_PHASE) {
         drawIntroScreen(vWidth, vHeight, aspect_size)
         drawLanguageToggle(vWidth, vHeight, aspect_size)
+        // drawDesktop(vWidth, vHeight, aspect_size);
         if (blurred) ctx.restore();
         return
     }
@@ -648,6 +670,134 @@ function draw() {
 
     drawInfoButton(vWidth, vHeight, aspect_size)
 }
+function drawDesktop(vWidth, vHeight, aspect_size) {
+    ctx.save();
+
+    // 🖼 Desktop background image (responsive cover)
+    if (desktopBg.complete && desktopBg.naturalWidth !== 0) {
+        const imgRatio = desktopBg.width / desktopBg.height;
+        const canvasRatio = vWidth / vHeight;
+
+        let drawWidth, drawHeight, offsetX, offsetY;
+
+        if (canvasRatio > imgRatio) {
+            drawWidth = vWidth;
+            drawHeight = vWidth / imgRatio;
+            offsetX = 0;
+            offsetY = (vHeight - drawHeight) / 2;
+        } else {
+            drawHeight = vHeight;
+            drawWidth = vHeight * imgRatio;
+            offsetX = (vWidth - drawWidth) / 2;
+            offsetY = 0;
+        }
+
+        ctx.drawImage(desktopBg, offsetX, offsetY, drawWidth, drawHeight);
+    } else {
+        // fallback ако сликата не е вчитана
+        ctx.fillStyle = "#020617";
+        ctx.fillRect(0, 0, vWidth, vHeight);
+    }
+
+    // 📂 Files
+    drawFiles(ctx, filesData, canvas, aspect_size, vWidth, vHeight);
+
+    ctx.restore();
+}
+
+function drawFiles(ctx, files, canvas, aspect_size, vWidth, vHeight) {
+    const uiScale = 1; // getUIScale(vWidth);
+
+    const size = (64 / aspect_size) * uiScale;
+    // const gap  = (28 / aspect_size) * uiScale;
+    const gap  = (44 / aspect_size) * uiScale; // простор за текст
+
+    let x = (24 / aspect_size) * uiScale;
+    let y = (80 / aspect_size) * uiScale;
+
+    const maxY = vHeight - size - (20 / aspect_size);
+
+    files.forEach((file) => {
+        if (y > maxY) {
+            y = (80 / aspect_size) * uiScale;
+            x += size + gap;
+        }
+
+        drawFileIcon(file, x, y, size, aspect_size);
+
+        file.x = x;
+        file.y = y;
+        file.size = size;
+
+        y += size + gap;
+    });
+}
+
+
+function drawFileIcon(file, x, y, size, aspect_size) {
+    ctx.save();
+
+    const hover = mouseIsInside(x, y, size, size);
+
+    // Hover glow
+    if (hover) {
+        ctx.shadowBlur = 12 / aspect_size;
+        ctx.shadowColor = "#00f2ff";
+    }
+
+    // 🖼 Icon image
+    const iconImg = file.clean ? cleanIcon : uncleanIcon;
+
+    if (iconImg.complete && iconImg.naturalWidth !== 0) {
+        ctx.drawImage(iconImg, x, y, size, size);
+    } else {
+        // fallback ако сликата не е вчитана
+        ctx.fillStyle = file.clean ? "#22c55e" : "#ef4444";
+        ctx.fillRect(x, y, size, size);
+    }
+
+    // 📝 File name under icon
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = "#050505";
+    ctx.font = `${12 / aspect_size}px sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "top";
+
+    const textY = y + size + (6 / aspect_size);
+
+    // wrap ако името е долго
+    drawWrappedText(
+        file.name,
+        x + size / 2,
+        textY,
+        size + 10,
+        14 / aspect_size
+    );
+
+    ctx.restore();
+}
+function drawWrappedText(text, x, y, maxWidth, lineHeight) {
+    const words = text.split(" ");
+    let line = "";
+
+    for (let i = 0; i < words.length; i++) {
+        const testLine = line + words[i];
+        const metrics = ctx.measureText(testLine);
+        const testWidth = metrics.width;
+
+        if (testWidth > maxWidth && i > 0) {
+            ctx.fillText(line, x, y);
+            line = words[i];
+            y += lineHeight;
+        } else {
+            line = testLine;
+        }
+    }
+    ctx.fillText(line, x, y);
+}
+
+
+
 
 function drawSuccessScreen(vWidth, vHeight) {
     // Background
