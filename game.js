@@ -143,17 +143,17 @@ const info = {
     text: HELP_TEXT[CURRENT_GAME_LANGUAGE]
 }
 const filesData = [
-    { name: "report.docx", clean: true },
+    { name: "report.docx", clean: false },
     { name: "image.png", clean: false },
-    { name: "video.mp4", clean: true },
+    { name: "video.mp4", clean: false },
     { name: "music.mp3", clean: false },
-    { name: "notes.txt", clean: true },
+    { name: "notes.txt", clean: false },
     { name: "backup.zip", clean: false },
     { name: "system.dll", clean: false },
-    { name: "data.csv", clean: true },
+    { name: "data.csv", clean: false },
     { name: "passwords.pdf", clean: false },
-    { name: "presentation.pptx", clean: true },
-    { name: "archive.rar", clean: true }
+    { name: "presentation.pptx", clean: false },
+    { name: "archive.rar", clean: false }
 ];
 const desktopBg = new Image();
 desktopBg.src = "images/Desktop_IMG.jpg";
@@ -162,7 +162,7 @@ const cleanIcon = new Image();
 cleanIcon.src = "images/clean.png";
 
 const uncleanIcon = new Image();
-uncleanIcon.src = "images/unclean.png";
+uncleanIcon.src = "images/corrupted.png";
 
 
 
@@ -340,6 +340,7 @@ function startGame() {
 function startTraining() {
     points = 0;
     timeElapsed = 0;
+    // gamePhase = MINIGAME_INTRO_PHASE;
     gamePhase = PLAYING_PHASE;
     startNewRound();
     lastTime = Date.now();
@@ -673,7 +674,6 @@ function draw() {
 function drawDesktop(vWidth, vHeight, aspect_size) {
     ctx.save();
 
-    // 🖼 Desktop background image (responsive cover)
     if (desktopBg.complete && desktopBg.naturalWidth !== 0) {
         const imgRatio = desktopBg.width / desktopBg.height;
         const canvasRatio = vWidth / vHeight;
@@ -699,7 +699,6 @@ function drawDesktop(vWidth, vHeight, aspect_size) {
         ctx.fillRect(0, 0, vWidth, vHeight);
     }
 
-    // 📂 Files
     drawFiles(ctx, filesData, canvas, aspect_size, vWidth, vHeight);
 
     ctx.restore();
@@ -745,7 +744,6 @@ function drawFileIcon(file, x, y, size, aspect_size) {
         ctx.shadowColor = "#00f2ff";
     }
 
-    // 🖼 Icon image
     const iconImg = file.clean ? cleanIcon : uncleanIcon;
 
     if (iconImg.complete && iconImg.naturalWidth !== 0) {
@@ -756,7 +754,6 @@ function drawFileIcon(file, x, y, size, aspect_size) {
         ctx.fillRect(x, y, size, size);
     }
 
-    // 📝 File name under icon
     ctx.shadowBlur = 0;
     ctx.fillStyle = "#050505";
     ctx.font = `${12 / aspect_size}px sans-serif`;
@@ -765,36 +762,35 @@ function drawFileIcon(file, x, y, size, aspect_size) {
 
     const textY = y + size + (6 / aspect_size);
 
-    // wrap ако името е долго
-    drawWrappedText(
-        file.name,
-        x + size / 2,
-        textY,
-        size + 10,
-        14 / aspect_size
-    );
+    // drawWrappedText(
+    //     file.name,
+    //     x + size / 2,
+    //     textY,
+    //     size + 10,
+    //     14 / aspect_size
+    // );
 
     ctx.restore();
 }
-function drawWrappedText(text, x, y, maxWidth, lineHeight) {
-    const words = text.split(" ");
-    let line = "";
-
-    for (let i = 0; i < words.length; i++) {
-        const testLine = line + words[i];
-        const metrics = ctx.measureText(testLine);
-        const testWidth = metrics.width;
-
-        if (testWidth > maxWidth && i > 0) {
-            ctx.fillText(line, x, y);
-            line = words[i];
-            y += lineHeight;
-        } else {
-            line = testLine;
-        }
-    }
-    ctx.fillText(line, x, y);
-}
+// function drawWrappedText(text, x, y, maxWidth, lineHeight) {
+//     const words = text.split(" ");
+//     let line = "";
+//
+//     for (let i = 0; i < words.length; i++) {
+//         const testLine = line + words[i];
+//         const metrics = ctx.measureText(testLine);
+//         const testWidth = metrics.width;
+//
+//         if (testWidth > maxWidth && i > 0) {
+//             ctx.fillText(line, x, y);
+//             line = words[i];
+//             y += lineHeight;
+//         } else {
+//             line = testLine;
+//         }
+//     }
+//     ctx.fillText(line, x, y);
+// }
 
 
 

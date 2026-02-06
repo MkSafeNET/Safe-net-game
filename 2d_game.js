@@ -43,19 +43,23 @@ export function Game2D(endGameFunc) {
     let hoveredFileId = null;
 
     const corruptedImg = new Image();
-    corruptedImg.src = "./images/file_images/corrupted_file.jpg";
+    corruptedImg.src = "./images/file_images/corrupted.png";
     corruptedImg.onload = () => imagesLoaded++;
 
     const cleanImg = new Image();
-    cleanImg.src = "./images/file_images/clean_file.jpg";
+    cleanImg.src = "./images/file_images/clean.png";
     cleanImg.onload = () => imagesLoaded++;
+
+    const desktopBg = new Image();
+    desktopBg.src = "./images/file_images/Desktop_IMG.jpg";
+    desktopBg.onload = () => imagesLoaded++;
 
     const files = Array.from({ length: 11 }, (_, i) => ({
         id: i,
         x: 0,
         y: 0,
-        width: 64,
-        height: 64,
+        width: 42,
+        height: 42,
         completed: false   // 🔑 false = corrupted, true = clean
     }));
 
@@ -954,19 +958,20 @@ export function Game2D(endGameFunc) {
 
         const aspect_size = 900 / w;
         ctx.save();
-        const bgGrad = ctx.createRadialGradient(w/2, h/2, 10, w/2, h/2, w);
-        bgGrad.addColorStop(0, "#0f172a");
-        bgGrad.addColorStop(1, "#020617");
-        ctx.fillStyle = bgGrad;
-        ctx.fillRect(0, 0, w, h);
+        // const bgGrad = ctx.createRadialGradient(w/2, h/2, 10, w/2, h/2, w);
+        // bgGrad.addColorStop(0, "#0f172a");
+        // bgGrad.addColorStop(1, "#020617");
+        // ctx.fillStyle = bgGrad;
+        // ctx.fillRect(0, 0, w, h);
+        ctx.drawImage(desktopBg, 0, 0, w, h);
         ctx.restore();
 
-        const cols = 4;
-        const spacing = 90;
-        const startX = (w - (cols - 1) * spacing) / 2;
-        const startY = h * 0.35;
+        const cols = 3;
+        const spacing = 60;
+        const startX = w * 0.05 //w-(w - (cols - 1) * spacing);
+        const startY = h * 0.25;
 
-        if (imagesLoaded < 2) {
+        if (imagesLoaded < 3) {
             return;
         }
 
@@ -977,7 +982,7 @@ export function Game2D(endGameFunc) {
         ctx.shadowBlur = 12 / aspect_size;
         ctx.shadowColor = "#00f2ff";
         ctx.font = `bold ${Math.round(32 / aspect_size)}px monospace`;
-        ctx.fillText("Преглед на датотеки",w/2, h*0.25);
+        ctx.fillText("Преглед на датотеки",w/2, h*0.1);
 
         ctx.shadowBlur = 0;
 
