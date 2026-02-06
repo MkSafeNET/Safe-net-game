@@ -1069,6 +1069,7 @@ function drawGameOver(vWidth, vHeight, aspect_size) {
     ctx.restore()
 }
 
+
 function drawMinigameIntroScreen(vWidth, vHeight, aspect_size) {
     // Background
     const bgGrad = ctx.createRadialGradient(vWidth / 2, vHeight / 2, 10, vWidth / 2, vHeight / 2, vWidth);

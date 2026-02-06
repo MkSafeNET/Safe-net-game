@@ -29,13 +29,38 @@ import {getTotalLevelsCount} from "./minigame_levels.js";
 import {UI_TEXT} from "./data/ui_text.js";
 import {CURRENT_GAME_LANGUAGE} from "./game.js";
 
+
 export function Game2D(endGameFunc) {
     const UI_PHASE = {
         PLAYING: "playing",
         LEVEL_CLEAR: "levelClear",   // timed screen
         GAME_CLEAR: "gameClear",     // final screen with button
-        DEATH: "death",              // death screen with button(s)
+        DEATH: "death",
+        FILE_SCAN: "fileScan"// death screen with button(s)
     };
+
+    let imagesLoaded = 0;
+    let hoveredFileId = null;
+
+    const corruptedImg = new Image();
+    corruptedImg.src = "./images/file_images/corrupted_file.jpg";
+    corruptedImg.onload = () => imagesLoaded++;
+
+    const cleanImg = new Image();
+    cleanImg.src = "./images/file_images/clean_file.jpg";
+    cleanImg.onload = () => imagesLoaded++;
+
+    const files = Array.from({ length: 11 }, (_, i) => ({
+        id: i,
+        x: 0,
+        y: 0,
+        width: 64,
+        height: 64,
+        completed: false   // 🔑 false = corrupted, true = clean
+    }));
+
+    let current_file = 0; // Tracks if a minigame is open
+
 
     let uiPhase = UI_PHASE.PLAYING;
     let uiTimer = 0; // seconds left for timed overlays
@@ -751,6 +776,14 @@ export function Game2D(endGameFunc) {
                 UI_TEXT.D2_GAME_LEVEL_CLEAR_TITLE[CURRENT_GAME_LANGUAGE],
                 [UI_TEXT.D2_GAME_LEVEL_CLEAR_LINES[CURRENT_GAME_LANGUAGE][0]+` ${passed_count}`, UI_TEXT.D2_GAME_LEVEL_CLEAR_LINES[CURRENT_GAME_LANGUAGE][1]]
             );
+
+            const bw = vW * 0.34;
+            const bh = vH * 0.12;
+            const bx = (vW - bw) / 2;
+            const by = vH * 0.70;
+
+            uiButtons.primary = { x: bx, y: by, w: bw, h: bh };
+            drawOverlayButton(context, UI_TEXT.EXIT[CURRENT_GAME_LANGUAGE], bx, by, bw, bh, mouseIsInsideBtn(uiButtons.primary));
         }
 
         if (uiPhase === UI_PHASE.GAME_CLEAR) {
@@ -784,6 +817,11 @@ export function Game2D(endGameFunc) {
 
             uiButtons.primary = { x: bx, y: by, w: bw, h: bh };
             drawOverlayButton(context, UI_TEXT.EXIT[CURRENT_GAME_LANGUAGE], bx, by, bw, bh, mouseIsInsideBtn(uiButtons.primary));
+        }
+
+        if (uiPhase === UI_PHASE.FILE_SCAN) {
+            drawFilesGrid(context, this.viewport.x, this.viewport.y);
+            return; // ⬅️ важно: не цртај ништо друго
         }
     };
 
@@ -894,6 +932,93 @@ export function Game2D(endGameFunc) {
         ctx.restore();
     }
 
+    function drawFilesGrid(ctx, w, h) {
+
+        const aspect_size = 900 / w;
+        ctx.save();
+        const bgGrad = ctx.createRadialGradient(w/2, h/2, 10, w/2, h/2, w);
+        bgGrad.addColorStop(0, "#0f172a");
+        bgGrad.addColorStop(1, "#020617");
+        ctx.fillStyle = bgGrad;
+        ctx.fillRect(0, 0, w, h);
+        ctx.restore();
+
+        const cols = 4;
+        const spacing = 90;
+        const startX = (w - (cols - 1) * spacing) / 2;
+        const startY = h * 0.35;
+
+        if (imagesLoaded < 2) {
+            console.log("ne se vcitani")
+            return;
+        }
+
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        ctx.fillStyle = "#00f2ff";
+        ctx.shadowBlur = 12 / aspect_size;
+        ctx.shadowColor = "#00f2ff";
+        ctx.font = `bold ${Math.round(32 / aspect_size)}px monospace`;
+        ctx.fillText("Преглед на датотеки",w/2, h*0.25);
+
+        ctx.shadowBlur = 0;
+
+        files.forEach((file, i) => {
+            const col = i % cols;
+            const row = Math.floor(i / cols);
+
+            file.x = startX + col * spacing;
+            file.y = startY + row * spacing;
+
+            const img = file.completed ? cleanImg : corruptedImg;
+
+            ctx.save();
+
+            // ✨ HOVER EFFECT
+            if (hoveredFileId === file.id && !file.completed) {
+                ctx.shadowBlur = 20;
+                ctx.shadowColor = "#00f2ff";
+                ctx.strokeStyle = "#00f2ff";
+                ctx.lineWidth = 3;
+
+                ctx.strokeRect(
+                    file.x - file.width / 2 - 3,
+                    file.y - file.height / 2 - 3,
+                    file.width + 6,
+                    file.height + 6
+                );
+            }
+
+            ctx.drawImage(
+                img,
+                file.x - file.width / 2,
+                file.y - file.height / 2,
+                file.width,
+                file.height
+            );
+
+            ctx.restore();
+        });
+
+        // files.forEach((file, i) => {
+        //     const col = i % cols;
+        //     const row = Math.floor(i / cols);
+        //
+        //     file.x = startX + col * spacing;
+        //     file.y = startY + row * spacing;
+        //
+        //     const img = file.completed ? cleanImg : corruptedImg;
+        //
+        //     ctx.drawImage(
+        //         img,
+        //         file.x - file.width / 2,
+        //         file.y - file.height / 2,
+        //         file.width,
+        //         file.height
+        //     );
+        // });
+    }
 
 
     /* Setup of the engine */
@@ -982,15 +1107,15 @@ export function Game2D(endGameFunc) {
                 steps++;
             }
 
-            if (uiPhase === UI_PHASE.LEVEL_CLEAR) {
-                uiTimer -= frameTime / 1000;
-                if (uiTimer <= 0) {
-                    uiPhase = UI_PHASE.PLAYING;
-                    pendingAction = null;
-                    StartMiniGame(); // loads next level
-                    return; // important: stop this frame chain, StartMiniGame restarts loop cleanly
-                }
-            }
+            // if (uiPhase === UI_PHASE.LEVEL_CLEAR) {
+            //     uiTimer -= frameTime / 1000;
+            //     if (uiTimer <= 0) {
+            //         uiPhase = UI_PHASE.PLAYING;
+            //         pendingAction = null;
+            //         StartMiniGame(); // loads next level
+            //         return; // important: stop this frame chain, StartMiniGame restarts loop cleanly
+            //     }
+            // }
 
             // ---- render (can be 60/144/whatever) ----
             ctx.fillStyle = "#333";
@@ -1094,17 +1219,95 @@ export function Game2D(endGameFunc) {
 
     canvas.addEventListener("click", () => {
         // EXIT button on both GAME_CLEAR and DEATH
-        if (uiPhase === UI_PHASE.GAME_CLEAR || uiPhase === UI_PHASE.DEATH) {
+        if (uiPhase === UI_PHASE.GAME_CLEAR || uiPhase === UI_PHASE.DEATH || uiPhase === UI_PHASE.LEVEL_CLEAR) {
             if (uiButtons.primary && mouseIsInsideBtn(uiButtons.primary)) {
                 // happyEnd only true if you cleared all levels; death keeps it false
                 if (uiPhase === UI_PHASE.GAME_CLEAR) setHappyEndTrue();
 
+                if(uiPhase === UI_PHASE.LEVEL_CLEAR) {
+                        uiPhase = UI_PHASE.FILE_SCAN;
+                        console.log("current file");
+                        console.log(current_file);
+                        files.forEach(f => {
+                            if(f.id===current_file){
+                                console.log("the same with current");
+                                console.log(f.id);
+                                f.completed = true;
+                            }
+                        })
+                        return;
+                    //StartMiniGame();
+
+                }
+
                 resetMiniGameState(); // important: wipe state BEFORE returning
                 StopMiniGame();
-                return;
+                //return;
             }
         }
     });
+
+    canvas.addEventListener("click", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        // const mx = e.clientX - rect.left;
+        // const my = e.clientY - rect.top;
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+
+        const mx = (e.clientX - rect.left) * scaleX;
+        const my = (e.clientY - rect.top) * scaleY;
+
+        hoveredFileId = null;
+
+        files.forEach(file => {
+            if (file.completed) return;
+
+            if (
+                mx >= file.x - file.width / 2 &&
+                mx <= file.x + file.width / 2 &&
+                my >= file.y - file.height / 2 &&
+                my <= file.y + file.height / 2
+            ) {
+                console.log(file.id);
+                console.log("clicked");
+                uiPhase = UI_PHASE.PLAYING;
+                pendingAction = null;
+                current_file = file.id;
+                // startMiniGame(file.id);
+                StartMiniGame();
+            }
+            console.log("file is not clicked");
+        });
+    });
+
+    canvas.addEventListener("mousemove", (e) => {
+        const rect = canvas.getBoundingClientRect();
+        // const mx = e.clientX - rect.left;
+        // const my = e.clientY - rect.top;
+        const scaleX = canvas.width / rect.width;
+        const scaleY = canvas.height / rect.height;
+
+        const mx = (e.clientX - rect.left) * scaleX;
+        const my = (e.clientY - rect.top) * scaleY;
+
+        hoveredFileId = null;
+
+        files.forEach(file => {
+            if (file.completed) return; //
+
+            if (
+                mx >= file.x - file.width / 2 &&
+                mx <= file.x + file.width / 2 &&
+                my >= file.y - file.height / 2 &&
+                my <= file.y + file.height / 2
+            ) {
+                hoveredFileId = file.id;
+            }
+        });
+    });
+
+
+
 
 
 
