@@ -978,11 +978,18 @@ export function Game2D(endGameFunc) {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
-        ctx.fillStyle = "#00f2ff";
+        ctx.fillStyle = "#f8f6f6";
         ctx.shadowBlur = 12 / aspect_size;
-        ctx.shadowColor = "#00f2ff";
+        // ctx.shadowColor = "#00f2ff";
         ctx.font = `bold ${Math.round(32 / aspect_size)}px monospace`;
-        ctx.fillText("Преглед на датотеки",w/2, h*0.1);
+        ctx.fillText(UI_TEXT.FILES_SCREEN_TITLE[CURRENT_GAME_LANGUAGE],w/2, h*0.1);
+
+
+        ctx.fillStyle = "#f8f6f6";
+        ctx.shadowBlur = 12 / aspect_size;
+        // ctx.shadowColor = "#00f2ff";
+        ctx.font = `${Math.round(20 / aspect_size)}px monospace`;
+        ctx.fillText(UI_TEXT.FILES_SCREEN_DESCRIPTION[CURRENT_GAME_LANGUAGE],w/2, h*0.15);
 
         ctx.shadowBlur = 0;
 
@@ -1025,23 +1032,6 @@ export function Game2D(endGameFunc) {
             ctx.restore();
         });
 
-        // files.forEach((file, i) => {
-        //     const col = i % cols;
-        //     const row = Math.floor(i / cols);
-        //
-        //     file.x = startX + col * spacing;
-        //     file.y = startY + row * spacing;
-        //
-        //     const img = file.completed ? cleanImg : corruptedImg;
-        //
-        //     ctx.drawImage(
-        //         img,
-        //         file.x - file.width / 2,
-        //         file.y - file.height / 2,
-        //         file.width,
-        //         file.height
-        //     );
-        // });
     }
 
 
@@ -1298,38 +1288,7 @@ export function Game2D(endGameFunc) {
             }
         });
     });
-    // canvas.addEventListener("click", (e) => {
-    //     const rect = canvas.getBoundingClientRect();
-    //     // const mx = e.clientX - rect.left;
-    //     // const my = e.clientY - rect.top;
-    //     const scaleX = canvas.width / rect.width;
-    //     const scaleY = canvas.height / rect.height;
-    //
-    //     const mx = (e.clientX - rect.left) * scaleX;
-    //     const my = (e.clientY - rect.top) * scaleY;
-    //
-    //     hoveredFileId = null;
-    //
-    //     files.forEach(file => {
-    //         if (file.completed) return;
-    //
-    //         if (
-    //             mx >= file.x - file.width / 2 &&
-    //             mx <= file.x + file.width / 2 &&
-    //             my >= file.y - file.height / 2 &&
-    //             my <= file.y + file.height / 2
-    //         ) {
-    //             console.log(file.id);
-    //             console.log("clicked");
-    //             uiPhase = UI_PHASE.PLAYING;
-    //             pendingAction = null;
-    //             current_file = file.id;
-    //             // startMiniGame(file.id);
-    //             StartMiniGame();
-    //         }
-    //         console.log("file is not clicked");
-    //     });
-    // });
+
 
     canvas.addEventListener("mousemove", (e) => {
         const rect = canvas.getBoundingClientRect();

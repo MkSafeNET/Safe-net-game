@@ -717,6 +717,12 @@ function drawDesktop(vWidth, vHeight, aspect_size) {
 }
 
 function drawFiles(ctx, files, canvas, aspect_size, vWidth, vHeight) {
+    ctx.shadowBlur = 15 / aspect_size;
+    // ctx.shadowColor = "#00f2ff"; // Hot pink neon glow
+    ctx.fillStyle = "#f8f6f6";
+    ctx.font = `bold ${Math.round(32 / aspect_size)}px monospace`;
+    ctx.fillText(UI_TEXT.FILES_SCREEN_TITLE[CURRENT_GAME_LANGUAGE], vWidth / 2, vHeight * 0.1);
+
     const uiScale = 1; // getUIScale(vWidth);
 
     const size = (64 / aspect_size) * uiScale;
