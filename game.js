@@ -44,6 +44,8 @@ const BONUS_INTRO_PHASE = "bonusIntro";
 const BONUS_ROUND_PHASE = "bonusRound"
 const FINAL_GAME_OVER_PHASE = "finalGameOver"
 const MINIGAME_INTRO_PHASE = "minigameIntro";
+const DESKTOP_PREVIEW_PHASE = "desktop_preview";
+
 // const MINI_GAME_PHASE = "miniGame"
 
 const MINIGAME_REASON = {
@@ -164,8 +166,9 @@ cleanIcon.src = "images/file_images/clean.png";
 const uncleanIcon = new Image();
 uncleanIcon.src = "images/file_images/corrupted.png";
 
-let desktopStartTime = null;
-const DESKTOP_DURATION = 5000;
+let desktopPreviewStartTime = null;
+const DESKTOP_PREVIEW_DURATION = 3000; // 5 секунди
+
 
 
 /**
@@ -603,23 +606,26 @@ function draw() {
     }
 
     if (gamePhase === INTRO_PHASE) {
-
-        if (desktopStartTime === null) {
-            desktopStartTime = performance.now();
-        }
-
         drawIntroScreen(vWidth, vHeight, aspect_size);
         drawLanguageToggle(vWidth, vHeight, aspect_size);
+        if (blurred) ctx.restore();
+        return;
+    }
 
-        const elapsed = performance.now() - desktopStartTime;
+    if (gamePhase === DESKTOP_PREVIEW_PHASE) {
+        drawDesktop(vWidth, vHeight, aspect_size);
 
-        if (elapsed < DESKTOP_DURATION) {
-            drawDesktop(vWidth, vHeight, aspect_size);
+        const elapsed = performance.now() - desktopPreviewStartTime;
+
+        if (elapsed >= DESKTOP_PREVIEW_DURATION) {
+            desktopPreviewStartTime = null;
+            startTraining();
         }
 
         if (blurred) ctx.restore();
         return;
     }
+
 
     if (gamePhase === SUCCESS_PHASE) {
         drawSuccessScreen(vWidth, vHeight)
@@ -2161,7 +2167,10 @@ canvas.addEventListener("click", (e) => {
 
     if (gamePhase === INTRO_PHASE && introButton) {
         if (isInside(mx, my, introButton.x, introButton.y, introButton.w, introButton.h)) {
-            startTraining()
+            //startTraining()
+            // console.log("INTRO CLICK → DESKTOP PREVIEW");
+            gamePhase = DESKTOP_PREVIEW_PHASE;
+            desktopPreviewStartTime = performance.now();
             return
         }
     }
