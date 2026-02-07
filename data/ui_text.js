@@ -55,13 +55,19 @@ const UI_TEXT = {
     INSTRUCTIONS_TEXT: {},
     TRAINING: {},
     FILES_SCREEN_TITLE: {},
-    FILES_SCREEN_DESCRIPTION: {}
+    FILES_SCREEN_DESCRIPTION: {},
+
+    MAX_UNSAFE_CLICKS_GAME_OVER_TEXT: {}
 }
 
 // Help screen header
 // Instructions
 // Retry Screen button text
 // Success Screen Text
+
+UI_TEXT.MAX_UNSAFE_CLICKS_GAME_OVER_TEXT[GAME_LANGUAGES.MACEDONIAN_LANGUAGE]="Антивирусот е збунет и не препознава закани"
+UI_TEXT.MAX_UNSAFE_CLICKS_GAME_OVER_TEXT[GAME_LANGUAGES.ENGLISH_LANGUAGE]="The antivirus is confused and fails to recognize threats"
+UI_TEXT.MAX_UNSAFE_CLICKS_GAME_OVER_TEXT[GAME_LANGUAGES.ALBANIAN_LANGUAGE]="Antivirusi është i hutuar dhe nuk i njeh kërcënimet"
 
 UI_TEXT.FILES_SCREEN_TITLE[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = "ПРЕГЛЕД НА ДАТОТЕКИ"
 UI_TEXT.FILES_SCREEN_TITLE[GAME_LANGUAGES.ENGLISH_LANGUAGE] = "FILE OVERVIEW"
@@ -105,7 +111,7 @@ UI_TEXT.GAME_OVER_HEADER_TEXT[GAME_LANGUAGES.ALBANIAN_LANGUAGE]="NUK MUNDE TË P
 
 UI_TEXT.GAME_OVER_SUBHEADER_TEXT[GAME_LANGUAGES.ENGLISH_LANGUAGE]="The antivirus hero is not trained enough to fight the virus."
 UI_TEXT.GAME_OVER_SUBHEADER_TEXT[GAME_LANGUAGES.MACEDONIAN_LANGUAGE]="Антивирусниот херој не е доволно обучен за да се избори со вирусот."
-UI_TEXT.GAME_OVER_SUBHEADER_TEXT[GAME_LANGUAGES.ALBANIAN_LANGUAGE]="Heroi antivirus nuk është mjaftueshëm i trajnuar për t’u përballur me virusin."
+UI_TEXT.GAME_OVER_SUBHEADER_TEXT[GAME_LANGUAGES.ALBANIAN_LANGUAGE]="Heroi antivirus nuk është mjaftueshëm i trajnuar për të luftuar virusin."
 
 UI_TEXT.GAME_OVER_BUTTON_TEXT[GAME_LANGUAGES.ENGLISH_LANGUAGE]="RESTART"
 UI_TEXT.GAME_OVER_BUTTON_TEXT[GAME_LANGUAGES.MACEDONIAN_LANGUAGE]="НОВ ПОЧЕТОК"

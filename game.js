@@ -35,6 +35,8 @@ const BONUS_ROUND_HEADER_TEXT_FONT_SIZE = 26
 const BONUS_ROUND_BODY_TEXT_FONT_SIZE = 20
 const BONUS_ROUND_SCORE_TEXT_FONT_SIZE = 18
 
+let unsafeClicks = 0
+
 
 const INTRO_PHASE = "intro"
 const PLAYING_PHASE = "playing"
@@ -45,6 +47,7 @@ const BONUS_ROUND_PHASE = "bonusRound"
 const FINAL_GAME_OVER_PHASE = "finalGameOver"
 const MINIGAME_INTRO_PHASE = "minigameIntro";
 const DESKTOP_PREVIEW_PHASE = "desktop_preview";
+
 
 // const MINI_GAME_PHASE = "miniGame"
 
@@ -680,11 +683,16 @@ function draw() {
         drawImages(vWidth, vHeight, aspect_size)
     }
 
-    drawTotalTimer(vWidth, vHeight, aspect_size)
+    // drawTotalTimer(vWidth, vHeight, aspect_size)
 
     drawLanguageToggle(vWidth, vHeight, aspect_size)
     if (blurred) {
         ctx.restore()
+    }
+
+    if(unsafeClicks===6){
+        gamePhase = FINAL_GAME_OVER_PHASE
+        return;
     }
 
     drawInfoButton(vWidth, vHeight, aspect_size)
@@ -1044,7 +1052,12 @@ function drawGameOver(vWidth, vHeight, aspect_size) {
     ctx.shadowBlur = 0;
     ctx.fillStyle = "#00f2ff";
     ctx.font = `bold ${Math.round(20 / aspect_size)}px "Courier New", monospace`;
-    ctx.fillText(UI_TEXT.GAME_OVER_SUBHEADER_TEXT[CURRENT_GAME_LANGUAGE] + ` ${points}`, vWidth / 2, vHeight / 2 + (20 / aspect_size));
+    if(unsafeClicks<6) {
+        ctx.fillText(UI_TEXT.GAME_OVER_SUBHEADER_TEXT[CURRENT_GAME_LANGUAGE], vWidth / 2, vHeight / 2 + (20 / aspect_size));
+    }
+    else if(unsafeClicks===6){
+        ctx.fillText(UI_TEXT.MAX_UNSAFE_CLICKS_GAME_OVER_TEXT[CURRENT_GAME_LANGUAGE], vWidth / 2, vHeight / 2 + (20 / aspect_size));
+    }
 
 
     const btnW = Math.max(200, vWidth / 4);
@@ -1901,6 +1914,7 @@ function handlePasswordChoice(text) {
         addPoints(1)
     } else {
         // points -= 1
+        unsafeClicks+=1
         addPoints(-1)
     }
     startNewRound()
@@ -1912,6 +1926,7 @@ function handleImageChoice(img) {
         addPoints(2)
     } else {
         // points -= 1
+        unsafeClicks+=1
         addPoints(-1)
     }
     startNewRound()
@@ -2187,6 +2202,7 @@ canvas.addEventListener("click", (e) => {
             )
         ) {
             points = 0
+            unsafeClicks=0
             resetMainGame()
 
             // startMiniGame()
