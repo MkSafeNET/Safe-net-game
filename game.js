@@ -617,6 +617,7 @@ function draw() {
 
     if (gamePhase === DESKTOP_PREVIEW_PHASE) {
         drawDesktop(vWidth, vHeight, aspect_size);
+        drawLanguageToggle(vWidth, vHeight+(15 / aspect_size), aspect_size);
 
         const elapsed = performance.now() - desktopPreviewStartTime;
 
@@ -675,6 +676,7 @@ function draw() {
     drawInstructions(vWidth, vHeight+(100 / aspect_size), aspect_size)
     // drawScore(vWidth, aspect_size)
     drawScoreBar(vWidth, aspect_size)
+    drawMaxUnsafeClicks(vWidth, aspect_size)
     drawTimer(vWidth, vHeight, aspect_size)
 
     if (currentRoundMode === PASSWORDS_MODE) {
@@ -1040,6 +1042,7 @@ function drawGameOver(vWidth, vHeight, aspect_size) {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
+    console.log(points)
 
     // Game Over Header
     ctx.shadowBlur = 15 / aspect_size;
@@ -1173,7 +1176,7 @@ function drawInstructions(vWidth, vHeight, aspect_size) {
     ctx.save();
 
     const scaleFont = Math.round(INSTRUCTION_TEXT_FONT_SIZE / aspect_size);
-    const yPos = vHeight * 0.15 - (40 / aspect_size);
+    const yPos = vHeight * 0.15 - (20 / aspect_size);
 
     // 1. Draw a subtle "Underline" or accent bar
     ctx.strokeStyle = "rgba(0, 242, 255, 0.3)";
@@ -1197,6 +1200,40 @@ function drawInstructions(vWidth, vHeight, aspect_size) {
     ctx.restore();
 }
 
+function drawMaxUnsafeClicks(vWidth, aspect_size) {
+    const y = 25 / aspect_size;
+    const w = vWidth * 0.15;
+
+    ctx.save();
+
+
+    ctx.fillStyle = "#00f2ff";
+    ctx.font = `bold ${Math.round(SCORE_FONT_SIZE / aspect_size)}px "Courier New", monospace`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "bottom";
+
+    const remaining = 6 - unsafeClicks;
+    const textBefore = "Антивирусот може да научи уште ";
+    const textAfter = " небезбедни потези";
+
+    ctx.fillText(textBefore, w, y - (6 / aspect_size));
+
+    const widthBefore = ctx.measureText(textBefore).width;
+
+    ctx.fillStyle = "#fb0000";
+    ctx.fillText(remaining, w + widthBefore, y - (6 / aspect_size));
+
+    const widthNumber = ctx.measureText(remaining).width;
+
+
+    ctx.fillStyle = "#00f2ff";
+    ctx.fillText(textAfter, w + widthBefore + widthNumber, y - (6 / aspect_size));
+
+    ctx.restore();
+}
+
+
+
 
 function drawScoreBar(vWidth, aspect_size) {
     const x = 20 / aspect_size;
@@ -1206,6 +1243,7 @@ function drawScoreBar(vWidth, aspect_size) {
 
     const p = getTrainingPercent(); // 0..1
     const fillW = w * p;
+
 
     ctx.save();
 
@@ -2201,9 +2239,9 @@ canvas.addEventListener("click", (e) => {
                 restartButton.h
             )
         ) {
-            points = 0
             unsafeClicks=0
-            resetMainGame()
+            //resetMainGame()
+            startGame()
 
             // startMiniGame()
         }
