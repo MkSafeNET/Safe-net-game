@@ -38,6 +38,8 @@ const UI_TEXT = {
     BONUS_INTRO_LINE_2: {},
     BONUS_INTRO_BUTTON_TEXT: {},
 
+    BONUS_ROUND_HEADER_TEXT: {},
+
     D2_GAME_DEATH_TITLE : {},
     D2_GAME_DEATH_LINES : {},
 
@@ -131,7 +133,7 @@ UI_TEXT.INTRO_PHASE_BUTTON_TEXT[GAME_LANGUAGES.ENGLISH_LANGUAGE]="START TRAINING
 
 
 UI_TEXT.INTRO_PHASE_HEADER_TEXT[GAME_LANGUAGES.MACEDONIAN_LANGUAGE]="Стани херој на безбедниот интернет"
-UI_TEXT.INTRO_PHASE_SUBHEADER_TEXT[GAME_LANGUAGES.MACEDONIAN_LANGUAGE]="Компјутерскиот систем на една организација е нападнат од опасен вирус.\n Твоја задача е да тренираш антивирусен херој и да го научиш кои интернет акции се\n безбедни. Времето за комплетирање на обуката е ограничено.\n Кога обуката ќе заврши успешно, започнува вистинската мисија!"
+UI_TEXT.INTRO_PHASE_SUBHEADER_TEXT[GAME_LANGUAGES.MACEDONIAN_LANGUAGE]="Компјутерскиот систем на една организација е нападнат од опасен вирус.\n Твоја задача е да тренираш антивирусен херој и да го научиш кои интернет\n акции се безбедни. Времето за комплетирање на обуката е ограничено.\n Кога обуката ќе заврши успешно, започнува вистинската мисија!"
 UI_TEXT.INTRO_PHASE_BUTTON_LABEL_TEXT[GAME_LANGUAGES.MACEDONIAN_LANGUAGE]="Дали си подготвен да станеш херој на безбедниот интернет?"
 UI_TEXT.INTRO_PHASE_BUTTON_TEXT[GAME_LANGUAGES.MACEDONIAN_LANGUAGE]="ЗАПОЧНИ ОБУКА"
 
@@ -176,7 +178,7 @@ UI_TEXT.MINIGAME_REASON_BONUS_PERFECT_LINE_1[GAME_LANGUAGES.MACEDONIAN_LANGUAGE]
 UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_1[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = "Херојот е спремен да се бори со вирусот. Помогни му да го пронајде.";
 
 UI_TEXT.MINIGAME_REASON_LINE_2[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = "Притисни го копчето за распоредување.";
-UI_TEXT.MINIGAME_REASON_BONUS_PERFECT_LINE_2[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = "Твоја задача е да го водиш низ податоците на неколку датотеки, избегнувајќи ги оштетените податоци. \nКористи ја мапата на бои за полесно пребарување:\n 🟥 оштетен податок    ⬛ воздигнувач    🟪 скок-плочка    🟦 отклучи патека     🟨 вирус";
+UI_TEXT.MINIGAME_REASON_BONUS_PERFECT_LINE_2[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = "Твоја задача е да го водиш низ податоците на неколку датотеки, избегнувајќи ги\n оштетените податоци. Користи ја мапата на бои за полесно пребарување:\n 🟥 оштетен податок    ⬛ воздигнувач    🟪 скок-плочка    🟦 отклучи патека     🟨 вирус";
 UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_2[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = "Твоја задача е да го водиш низ податоците на неколку датотеки, избегнувајќи ги оштетените податоци. \nКористи ја мапата на бои за полесно пребарување:\n 🟥 оштетен податок    ⬛ воздигнувач    🟪 скок-плочка    🟦 отклучи патека     🟨 вирус";
 
 UI_TEXT.MINIGAME_REASON_BUTTON_TEXT[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = "ЗАПОЧНИ";
@@ -191,7 +193,7 @@ UI_TEXT.MINIGAME_REASON_BONUS_PERFECT_LINE_1[GAME_LANGUAGES.ALBANIAN_LANGUAGE] =
 UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_1[GAME_LANGUAGES.ALBANIAN_LANGUAGE] = "Heroi është gati të luftojë me virusin. Ndihmoje ta gjejë.";
 
 UI_TEXT.MINIGAME_REASON_LINE_2[GAME_LANGUAGES.ALBANIAN_LANGUAGE] = "Shtyp butonin për shpërndarje.";
-UI_TEXT.MINIGAME_REASON_BONUS_PERFECT_LINE_2[GAME_LANGUAGES.ALBANIAN_LANGUAGE] = "Detyra jote është ta udhëzosh përmes të dhënave në disa skedarë, duke shmangur të dhënat e dëmtuara. \nPërdor hartën e ngjyrave për të lehtësuar kërkimin:\n 🟥 të dhëna të dëmtuara    ⬛ Ngritës    🟪 Bllok-skok    🟦 Shkruaj rrugën    🟨 Virusi";
+UI_TEXT.MINIGAME_REASON_BONUS_PERFECT_LINE_2[GAME_LANGUAGES.ALBANIAN_LANGUAGE] = "Detyra jote është ta udhëzosh përmes të dhënave në disa skedarë, duke shmangur\n të dhënat e dëmtuara. Përdor hartën e ngjyrave për të lehtësuar kërkimin:\n 🟥 të dhëna të dëmtuara    ⬛ Ngritës    🟪 Bllok-skok    🟦 Shkruaj rrugën    🟨 Virusi";
 UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_2[GAME_LANGUAGES.ALBANIAN_LANGUAGE] = "Detyra jote është ta udhëzosh përmes të dhënave në disa skedarë, duke shmangur të dhënat e dëmtuara. \nPërdor hartën e ngjyrave për të lehtësuar kërkimin:\n 🟥 të dhëna të dëmtuara    ⬛ Ngritës    🟪 Bllok-skok    🟦 Shkruaj rrugën    🟨 Virusi";
 
 UI_TEXT.MINIGAME_REASON_BUTTON_TEXT[GAME_LANGUAGES.ALBANIAN_LANGUAGE] = "FILLON";
@@ -210,6 +212,11 @@ UI_TEXT.BONUS_INTRO_TITLE[GAME_LANGUAGES.ALBANIAN_LANGUAGE] = "WOW, KE MARRË NJ
 UI_TEXT.BONUS_INTRO_LINE_1[GAME_LANGUAGES.ALBANIAN_LANGUAGE] = "Heroi antivirus ende ka një shans për të mësuar.";
 UI_TEXT.BONUS_INTRO_LINE_2[GAME_LANGUAGES.ALBANIAN_LANGUAGE] = "Për të vazhduar me trajnimin, përgjigju saktë në tre ose katër sfida.";
 UI_TEXT.BONUS_INTRO_BUTTON_TEXT[GAME_LANGUAGES.ALBANIAN_LANGUAGE] = "FILLON SFIDËN";
+
+
+UI_TEXT.BONUS_ROUND_HEADER_TEXT[GAME_LANGUAGES.ENGLISH_LANGUAGE] = "ANTIVIRUS REPAIR"
+UI_TEXT.BONUS_ROUND_HEADER_TEXT[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = "ПОПРАВКА НА АНТИВИРУС"
+UI_TEXT.BONUS_ROUND_HEADER_TEXT[GAME_LANGUAGES.ALBANIAN_LANGUAGE] = "RIPARIMI I ANTIVIRUSIT"
 
 UI_TEXT.D2_GAME_DEATH_TITLE[GAME_LANGUAGES.ENGLISH_LANGUAGE] = "ACCESSED DAMAGED DATA";
 UI_TEXT.D2_GAME_DEATH_LINES[GAME_LANGUAGES.ENGLISH_LANGUAGE] = ["Virus not found.", "Successfully scanned files:"];

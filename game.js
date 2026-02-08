@@ -36,7 +36,6 @@ const BONUS_ROUND_BODY_TEXT_FONT_SIZE = 20
 const BONUS_ROUND_SCORE_TEXT_FONT_SIZE = 18
 
 
-
 const INTRO_PHASE = "intro"
 const PLAYING_PHASE = "playing"
 const SUCCESS_PHASE = "success"
@@ -652,7 +651,7 @@ function draw() {
 
     if (gamePhase === DESKTOP_PREVIEW_PHASE) {
         drawDesktop(vWidth, vHeight, aspect_size);
-        drawLanguageToggle(vWidth, vHeight, aspect_size,true);
+        drawLanguageToggle(vWidth, vHeight, aspect_size, true);
 
         const elapsed = performance.now() - desktopPreviewStartTime;
 
@@ -1353,10 +1352,6 @@ function drawUnsafeIntegrity(vWidth, aspect_size) {
 }
 
 
-
-
-
-
 function drawScoreBar(vWidth, aspect_size) {
     const x = 20 / aspect_size;
     const y = 25 / aspect_size;
@@ -1548,7 +1543,7 @@ function drawInfoPopup(vWidth, aspect_size) {
             ctx.fillText(">", tooltipX + padding, tooltipY + (padding * 1.5) + i * lineHeight);
 
             ctx.fillStyle = "#f8fafc";
-            ctx.fillText(line, tooltipX + padding + 15, tooltipY + (padding * 1.5) + i * lineHeight);
+            ctx.fillText(line, tooltipX + padding + (15 / aspect_size), tooltipY + (padding * 1.5) + i * lineHeight);
         }
 
     });
@@ -1793,7 +1788,7 @@ function drawBonusRound(vWidth, vHeight, aspect_size) {
     ctx.fillStyle = "#00f2ff"; // Cyber Cyan
     ctx.textAlign = "center";
     ctx.font = `bold ${headerFont}px monospace`;
-    ctx.fillText(`DECRYPTION_PHASE // [${bonusIndex + 1}/5]`, vWidth / 2, header_y);
+    ctx.fillText(`${UI_TEXT.BONUS_ROUND_HEADER_TEXT[CURRENT_GAME_LANGUAGE]} // [${bonusIndex + 1}/5]`, vWidth / 2, header_y);
 
     // Subtle line under header
     ctx.strokeStyle = "rgba(0, 242, 255, 0.3)";
@@ -1918,7 +1913,7 @@ function drawLanguageToggle(vWidth, vHeight, aspect_size, addBackground = false)
     const activeLabel = labels[langIndex];
 
     // Hit area (keep this)
-    langButtonArea = { x: btnX, y: btnY, w: btnW, h: btnH };
+    langButtonArea = {x: btnX, y: btnY, w: btnW, h: btnH};
 
     const hovered = mouseIsInside(btnX, btnY, btnW, btnH);
     const drawColor = hovered ? "#00f2ff" : "#0099a0";
