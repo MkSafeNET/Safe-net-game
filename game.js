@@ -24,7 +24,7 @@ const dpr = window.devicePixelRatio || 1
 
 const SCORE_FONT_SIZE = 14
 const PASSWORDS_FONT_SIZE = 22
-const TOTAL_TIMER_FONT_SIZE = 18
+// const TOTAL_TIMER_FONT_SIZE = 18
 const TIMER_RADIUS_SIZE = 20
 const INFO_BUTTON_RADIUS_SIZE = 18
 const INSTRUCTION_TEXT_FONT_SIZE = 20
@@ -35,7 +35,6 @@ const BONUS_ROUND_HEADER_TEXT_FONT_SIZE = 26
 const BONUS_ROUND_BODY_TEXT_FONT_SIZE = 20
 const BONUS_ROUND_SCORE_TEXT_FONT_SIZE = 18
 
-let unsafeClicks = 0
 
 
 const INTRO_PHASE = "intro"
@@ -113,6 +112,8 @@ let selectedOption = null
 const MAX_SUCCESS_WAVES = 3
 let successSequence = 0
 
+const MAX_UNSAFE_CLICKS = 6
+let unsafeClicks = 0
 
 const WAVE_TARGET = 10;
 
@@ -137,7 +138,24 @@ const unsafeImages = []
 const MAX_IMAGES_TO_CHECK_GOOD = 20
 const MAX_IMAGES_TO_CHECK_BAD = 20
 
-const {game: game, canvas: canvas2D, ctx: ctx2D, StartMiniGame} = Game2D(endMiniGame,CURRENT_GAME_LANGUAGE)
+
+export const images = {
+    desktopBg: new Image(),
+    cleanIcon: new Image(),
+    uncleanIcon: new Image()
+};
+
+// const desktopBg = new Image();
+// // desktopBg.src = "images/file_images/Desktop_IMG.jpg";
+//
+// const cleanIcon = new Image();
+// // cleanIcon.src = "images/file_images/clean.png";
+//
+// const uncleanIcon = new Image();
+// // uncleanIcon.src = "images/file_images/corrupted.png";
+
+
+const {game: game, canvas: canvas2D, ctx: ctx2D, StartMiniGame} = Game2D(endMiniGame, CURRENT_GAME_LANGUAGE)
 
 const info = {
     x: canvas.width - 40,
@@ -148,30 +166,21 @@ const info = {
     text: HELP_TEXT[CURRENT_GAME_LANGUAGE]
 }
 const filesData = [
-    { name: "report.docx", clean: false },
-    { name: "image.png", clean: false },
-    { name: "video.mp4", clean: false },
-    { name: "music.mp3", clean: false },
-    { name: "notes.txt", clean: false },
-    { name: "backup.zip", clean: false },
-    { name: "system.dll", clean: false },
-    { name: "data.csv", clean: false },
-    { name: "passwords.pdf", clean: false },
-    { name: "presentation.pptx", clean: false },
-    { name: "archive.rar", clean: false }
+    {name: "reports", clean: false},
+    {name: "images", clean: false},
+    {name: "videos", clean: false},
+    {name: "music", clean: false},
+    {name: "notes", clean: false},
+    {name: "backups", clean: false},
+    {name: "system32", clean: false},
+    {name: "data", clean: false},
+    {name: "documents", clean: false},
+    {name: "presentations", clean: false},
+    {name: "archives", clean: false}
 ];
-const desktopBg = new Image();
-desktopBg.src = "images/file_images/Desktop_IMG.jpg";
-
-const cleanIcon = new Image();
-cleanIcon.src = "images/file_images/clean.png";
-
-const uncleanIcon = new Image();
-uncleanIcon.src = "images/file_images/corrupted.png";
 
 let desktopPreviewStartTime = null;
 const DESKTOP_PREVIEW_DURATION = 3000; // 5 секунди
-
 
 
 /**
@@ -211,6 +220,14 @@ function loadImage(src) {
     });
 }
 
+function loadIntoImage(img, src) {
+    return new Promise((resolve, reject) => {
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error(`Failed to load: ${src}`));
+        img.src = src;
+    });
+}
+
 async function loadGameImages() {
     const safeSources = [];
     const unsafeSources = [];
@@ -233,6 +250,18 @@ async function loadGameImages() {
 
     for (const r of safeResults) if (r.status === "fulfilled") safeImages.push(r.value);
     for (const r of unsafeResults) if (r.status === "fulfilled") unsafeImages.push(r.value);
+
+    const uiResults = await Promise.allSettled([
+        loadIntoImage(images.desktopBg, "images/file_images/Desktop_IMG.jpg"),
+        loadIntoImage(images.cleanIcon, "images/file_images/clean.png"),
+        loadIntoImage(images.uncleanIcon, "images/file_images/corrupted.png"),
+    ]);
+
+    // Optional: hard-fail if any of these 3 fail
+    const uiFailed = uiResults.filter(r => r.status === "rejected");
+    if (uiFailed.length) {
+        throw new Error("Failed to load one or more UI images (desktop/clean/corrupted).");
+    }
 
     // Hard requirement: must have at least 1 of each
     // console.log(safeImages.length)
@@ -332,6 +361,7 @@ function startGame() {
     // passwordChoices = [];
     // currentImages = [];
 
+    unsafeClicks = 0
     points = 0;
     successSequence = 0;
     timeElapsed = 0;
@@ -353,10 +383,10 @@ function startTraining() {
     lastTime = Date.now();
 }
 
-function startGameImmediate() {
-    startGame();   // resets + intro state
-    startTraining();   // jumps into playing
-}
+// function startGameImmediate() {
+//     startGame();   // resets + intro state
+//     startTraining();   // jumps into playing
+// }
 
 function randomChar(type) {
     const upper = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
@@ -492,7 +522,7 @@ function endMiniGame() {
         controls.remove(); // Completely removes the elements from the DOM
     }
 
-    successSequence = 0
+    // successSequence = 0
     startGame()
 }
 
@@ -507,6 +537,11 @@ function update() {
     if (gamePhase === MINIGAME_INTRO_PHASE) return;
     if (gamePhase === INTRO_PHASE) return;
     if (gamePhase === BONUS_INTRO_PHASE) return;
+
+    if (unsafeClicks === MAX_UNSAFE_CLICKS) {
+        gamePhase = FINAL_GAME_OVER_PHASE
+        return;
+    }
 
 
     if (gamePhase === BONUS_ROUND_PHASE) {
@@ -575,19 +610,19 @@ function addPoints(delta) {
     }
 }
 
-function drawTotalTimer(vWidth, vHeight, aspect_size) {
-
-    const font_size = Math.round(TOTAL_TIMER_FONT_SIZE / aspect_size)
-
-    ctx.save()
-    ctx.font = `bold ${font_size}px monospace`
-    // Draw the "Time Remaining" text at the bottom
-    const remaining = Math.max(0, Math.ceil(gameDuration - timeElapsed))
-    ctx.fillStyle = "#f6f3f3"
-    ctx.textAlign = "center"
-    ctx.fillText(`Time left: ${remaining}s`, vWidth / 2, vHeight - 20)
-    ctx.restore()
-}
+// function drawTotalTimer(vWidth, vHeight, aspect_size) {
+//
+//     const font_size = Math.round(TOTAL_TIMER_FONT_SIZE / aspect_size)
+//
+//     ctx.save()
+//     ctx.font = `bold ${font_size}px monospace`
+//     // Draw the "Time Remaining" text at the bottom
+//     const remaining = Math.max(0, Math.ceil(gameDuration - timeElapsed))
+//     ctx.fillStyle = "#f6f3f3"
+//     ctx.textAlign = "center"
+//     ctx.fillText(`Time left: ${remaining}s`, vWidth / 2, vHeight - 20)
+//     ctx.restore()
+// }
 
 /**
  * Function that draws everything,NOTE: vWidth and vHeight are used AND NOT canvas.width and canvas.height because
@@ -617,7 +652,7 @@ function draw() {
 
     if (gamePhase === DESKTOP_PREVIEW_PHASE) {
         drawDesktop(vWidth, vHeight, aspect_size);
-        drawLanguageToggle(vWidth, vHeight+(15 / aspect_size), aspect_size);
+        drawLanguageToggle(vWidth, vHeight, aspect_size,true);
 
         const elapsed = performance.now() - desktopPreviewStartTime;
 
@@ -673,10 +708,11 @@ function draw() {
         return
     }
 
-    drawInstructions(vWidth, vHeight+(100 / aspect_size), aspect_size)
+    drawInstructions(vWidth, vHeight + (100 / aspect_size), aspect_size)
     // drawScore(vWidth, aspect_size)
     drawScoreBar(vWidth, aspect_size)
-    drawMaxUnsafeClicks(vWidth, aspect_size)
+    // drawMaxUnsafeClicks(vWidth, aspect_size)
+    drawUnsafeIntegrity(vWidth, aspect_size)
     drawTimer(vWidth, vHeight, aspect_size)
 
     if (currentRoundMode === PASSWORDS_MODE) {
@@ -692,18 +728,14 @@ function draw() {
         ctx.restore()
     }
 
-    if(unsafeClicks===6){
-        gamePhase = FINAL_GAME_OVER_PHASE
-        return;
-    }
-
     drawInfoButton(vWidth, vHeight, aspect_size)
 }
+
 function drawDesktop(vWidth, vHeight, aspect_size) {
     ctx.save();
 
-    if (desktopBg.complete && desktopBg.naturalWidth !== 0) {
-        const imgRatio = desktopBg.width / desktopBg.height;
+    if (images.desktopBg.complete && images.desktopBg.naturalWidth !== 0) {
+        const imgRatio = images.desktopBg.width / images.desktopBg.height;
         const canvasRatio = vWidth / vHeight;
 
         let drawWidth, drawHeight, offsetX, offsetY;
@@ -720,7 +752,7 @@ function drawDesktop(vWidth, vHeight, aspect_size) {
             offsetY = 0;
         }
 
-        ctx.drawImage(desktopBg, offsetX, offsetY, drawWidth, drawHeight);
+        ctx.drawImage(images.desktopBg, offsetX, offsetY, drawWidth, drawHeight);
     } else {
         // fallback ако сликата не е вчитана
         ctx.fillStyle = "#020617";
@@ -733,17 +765,42 @@ function drawDesktop(vWidth, vHeight, aspect_size) {
 }
 
 function drawFiles(ctx, files, canvas, aspect_size, vWidth, vHeight) {
-    ctx.shadowBlur = 15 / aspect_size;
-    // ctx.shadowColor = "#00f2ff"; // Hot pink neon glow
-    ctx.fillStyle = "#f8f6f6";
-    ctx.font = `bold ${Math.round(32 / aspect_size)}px monospace`;
-    ctx.fillText(UI_TEXT.FILES_SCREEN_TITLE[CURRENT_GAME_LANGUAGE], vWidth / 2, vHeight * 0.1);
+    ctx.save();
 
-    const uiScale = 1; // getUIScale(vWidth);
+    // ===== TITLE (bright-background variant) =====
+    const titleY = vHeight * 0.08;
+    const titleFontSize = Math.round(32 / aspect_size);
 
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+
+    // Dark ink for contrast
+    ctx.fillStyle = "#0f172a";
+
+    // Very soft cyan halo (accent, not glow)
+    ctx.shadowBlur = 6 / aspect_size;
+    ctx.shadowColor = "rgba(0, 242, 255, 0.35)";
+
+    ctx.font = `bold ${titleFontSize}px monospace`;
+    ctx.fillText(
+        UI_TEXT.FILES_SCREEN_TITLE[CURRENT_GAME_LANGUAGE],
+        vWidth / 2,
+        titleY
+    );
+
+    // Underline — cyan accent, thin
+    ctx.shadowBlur = 0;
+    ctx.strokeStyle = "rgba(0, 242, 255, 0.4)";
+    ctx.lineWidth = 1 / aspect_size;
+    ctx.beginPath();
+    ctx.moveTo(vWidth * 0.25, titleY + (18 / aspect_size));
+    ctx.lineTo(vWidth * 0.75, titleY + (18 / aspect_size));
+    ctx.stroke();
+
+    /* ===== FILE GRID (unchanged logic) ===== */
+    const uiScale = 1;
     const size = (64 / aspect_size) * uiScale;
-    // const gap  = (28 / aspect_size) * uiScale;
-    const gap  = (44 / aspect_size) * uiScale; // простор за текст
+    const gap = (44 / aspect_size) * uiScale;
 
     let x = (24 / aspect_size) * uiScale;
     let y = (80 / aspect_size) * uiScale;
@@ -764,6 +821,8 @@ function drawFiles(ctx, files, canvas, aspect_size, vWidth, vHeight) {
 
         y += size + gap;
     });
+
+    ctx.restore();
 }
 
 
@@ -778,7 +837,7 @@ function drawFileIcon(file, x, y, size, aspect_size) {
         ctx.shadowColor = "#00f2ff";
     }
 
-    const iconImg = file.clean ? cleanIcon : uncleanIcon;
+    const iconImg = file.clean ? images.cleanIcon : images.uncleanIcon;
 
     if (iconImg.complete && iconImg.naturalWidth !== 0) {
         ctx.drawImage(iconImg, x, y, size, size);
@@ -794,7 +853,7 @@ function drawFileIcon(file, x, y, size, aspect_size) {
     ctx.textAlign = "center";
     ctx.textBaseline = "top";
 
-    const textY = y + size + (6 / aspect_size);
+    // const textY = y + size + (6 / aspect_size);
 
     // drawWrappedText(
     //     file.name,
@@ -806,6 +865,7 @@ function drawFileIcon(file, x, y, size, aspect_size) {
 
     ctx.restore();
 }
+
 // function drawWrappedText(text, x, y, maxWidth, lineHeight) {
 //     const words = text.split(" ");
 //     let line = "";
@@ -825,8 +885,6 @@ function drawFileIcon(file, x, y, size, aspect_size) {
 //     }
 //     ctx.fillText(line, x, y);
 // }
-
-
 
 
 function drawSuccessScreen(vWidth, vHeight) {
@@ -879,7 +937,7 @@ function drawSuccessScreen(vWidth, vHeight) {
     ctx.fillStyle = "#e5e7eb";
     ctx.font = `${Math.round(vWidth * 0.028)}px "Courier New", monospace`;
     ctx.fillText(
-        UI_TEXT.SUCCESS_SCREEN_PROGREES_TEXT[CURRENT_GAME_LANGUAGE]+` ${Math.round(step / totalSteps * 100)}%`,
+        UI_TEXT.SUCCESS_SCREEN_PROGREES_TEXT[CURRENT_GAME_LANGUAGE] + ` ${Math.round(step / totalSteps * 100)}%`,
         vWidth / 2,
         vHeight * 0.60
     );
@@ -966,7 +1024,7 @@ function drawBonusIntroScreen(vWidth, vHeight, aspect_size) {
     const x = (vWidth - w) / 2;
     const y = vHeight * 0.62;
 
-    bonusIntroButton = { x, y, w, h };
+    bonusIntroButton = {x, y, w, h};
 
     drawCyberButton(UI_TEXT.BONUS_INTRO_BUTTON_TEXT[CURRENT_GAME_LANGUAGE], x, y, w, h, true, aspect_size);
 }
@@ -1055,10 +1113,9 @@ function drawGameOver(vWidth, vHeight, aspect_size) {
     ctx.shadowBlur = 0;
     ctx.fillStyle = "#00f2ff";
     ctx.font = `bold ${Math.round(20 / aspect_size)}px "Courier New", monospace`;
-    if(unsafeClicks<6) {
+    if (unsafeClicks < MAX_UNSAFE_CLICKS) {
         ctx.fillText(UI_TEXT.GAME_OVER_SUBHEADER_TEXT[CURRENT_GAME_LANGUAGE], vWidth / 2, vHeight / 2 + (20 / aspect_size));
-    }
-    else if(unsafeClicks===6){
+    } else if (unsafeClicks >= MAX_UNSAFE_CLICKS) {
         ctx.fillText(UI_TEXT.MAX_UNSAFE_CLICKS_GAME_OVER_TEXT[CURRENT_GAME_LANGUAGE], vWidth / 2, vHeight / 2 + (20 / aspect_size));
     }
 
@@ -1130,7 +1187,7 @@ function drawMinigameIntroScreen(vWidth, vHeight, aspect_size) {
         title = UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_TITLE[CURRENT_GAME_LANGUAGE];
         line1 = UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_1[CURRENT_GAME_LANGUAGE];
         // line2 = UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_2[CURRENT_GAME_LANGUAGE];
-        line2=UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_2[CURRENT_GAME_LANGUAGE];
+        line2 = UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_2[CURRENT_GAME_LANGUAGE];
 
     }
 
@@ -1154,7 +1211,7 @@ function drawMinigameIntroScreen(vWidth, vHeight, aspect_size) {
     ctx.fillStyle = "#94a3b8";
     ctx.font = `${Math.round(16 / aspect_size)}px monospace`;
     ctx.fillText(line1, vWidth / 2, vHeight * 0.42);
-    lines.forEach((t, i) => ctx.fillText(t+"", vWidth/2, startY + i * lineH));
+    lines.forEach((t, i) => ctx.fillText(t + "", vWidth / 2, startY + i * lineH));
     //ctx.fillText(line2, vWidth / 2, vHeight * 0.48);
 
     // Button
@@ -1163,7 +1220,7 @@ function drawMinigameIntroScreen(vWidth, vHeight, aspect_size) {
     const x = (vWidth - w) / 2;
     const y = vHeight * 0.63;
 
-    minigameIntroButton = { x, y, w, h };
+    minigameIntroButton = {x, y, w, h};
 
     drawCyberButton(UI_TEXT.MINIGAME_REASON_BUTTON_TEXT[CURRENT_GAME_LANGUAGE], x, y, w, h, true, aspect_size);
 }
@@ -1201,36 +1258,101 @@ function drawInstructions(vWidth, vHeight, aspect_size) {
 }
 
 function drawMaxUnsafeClicks(vWidth, aspect_size) {
-    const y = 25 / aspect_size;
-    const w = vWidth * 0.15;
+    // === anchor to score bar ===
+    const barX = 20 / aspect_size;
+    const barY = 25 / aspect_size;
+    const barH = 18 / aspect_size;
+
+    const textY = barY + barH + (18 / aspect_size); // ⬅ below bar
+    const textX = barX;
 
     ctx.save();
 
-
-    ctx.fillStyle = "#00f2ff";
     ctx.font = `bold ${Math.round(SCORE_FONT_SIZE / aspect_size)}px "Courier New", monospace`;
     ctx.textAlign = "left";
-    ctx.textBaseline = "bottom";
+    ctx.textBaseline = "alphabetic";
 
-    const remaining = 6 - unsafeClicks;
+    const remaining = MAX_UNSAFE_CLICKS - unsafeClicks;
     const textBefore = "Антивирусот може да научи уште ";
     const textAfter = " небезбедни потези";
 
-    ctx.fillText(textBefore, w, y - (6 / aspect_size));
+    // before
+    ctx.fillStyle = "#00f2ff";
+    ctx.fillText(textBefore, textX, textY);
 
     const widthBefore = ctx.measureText(textBefore).width;
 
+    // number
     ctx.fillStyle = "#fb0000";
-    ctx.fillText(remaining, w + widthBefore, y - (6 / aspect_size));
+    ctx.fillText(String(remaining), textX + widthBefore, textY);
 
-    const widthNumber = ctx.measureText(remaining).width;
+    const widthNumber = ctx.measureText(String(remaining)).width;
 
-
+    // after
     ctx.fillStyle = "#00f2ff";
-    ctx.fillText(textAfter, w + widthBefore + widthNumber, y - (6 / aspect_size));
+    ctx.fillText(textAfter, textX + widthBefore + widthNumber, textY);
 
     ctx.restore();
 }
+
+function drawUnsafeIntegrity(vWidth, aspect_size) {
+
+    const remaining = MAX_UNSAFE_CLICKS - unsafeClicks;
+
+    // anchor under score bar
+    const x = 20 / aspect_size;
+    const y = (25 + 18 + 22) / aspect_size; // text Y
+
+    const slotSize = 10 / aspect_size;
+    const gap = 5 / aspect_size;
+
+    ctx.save();
+
+    // LABEL
+    ctx.fillStyle = "#00f2ff";
+    ctx.font = `bold ${Math.round(SCORE_FONT_SIZE * 0.9 / aspect_size)}px "Courier New", monospace`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "alphabetic";
+    ctx.fillText(
+        UI_TEXT.UNSAFE_CLICKS_HEALTH_TEXT[CURRENT_GAME_LANGUAGE],
+        x,
+        y
+    );
+
+    // BARS — placed UNDER the text
+    const barsY = y + (10 / aspect_size); // vertical spacing below text
+
+    for (let i = 0; i < MAX_UNSAFE_CLICKS; i++) {
+        const sx = x + i * (slotSize + gap);
+        const intact = i < remaining;
+
+        ctx.beginPath();
+        ctx.roundRect(
+            sx,
+            barsY,
+            slotSize,
+            slotSize,
+            3 / aspect_size
+        );
+
+        if (intact) {
+            ctx.fillStyle = "rgba(0, 242, 255, 0.6)";
+            ctx.shadowBlur = 6 / aspect_size;
+            ctx.shadowColor = "#00f2ff";
+        } else {
+            ctx.fillStyle = "rgba(251, 0, 0, 0.6)";
+            ctx.shadowBlur = 6 / aspect_size;
+            ctx.shadowColor = "#fb0000";
+        }
+
+        ctx.fill();
+        ctx.shadowBlur = 0;
+    }
+
+    ctx.restore();
+}
+
+
 
 
 
@@ -1785,18 +1907,59 @@ function drawBonusRound(vWidth, vHeight, aspect_size) {
     ctx.fillText(`DATA_RECOVERED: ${bonusScore}`, vWidth / 2, vHeight - (20 / aspect_size));
 }
 
-function drawLanguageToggle(vWidth, vHeight, aspect_size) {
+function drawLanguageToggle(vWidth, vHeight, aspect_size, addBackground = false) {
     const btnW = 50 / aspect_size;
     const btnH = 30 / aspect_size;
-    // Position it in the top right, but slightly offset from the corner
-    const btnX = vWidth - btnW - (20 / aspect_size);
-    const btnY = vHeight - btnH - 20 / aspect_size;
 
-    // ISO Labels for the cycle
+    const btnX = vWidth - btnW - (20 / aspect_size);
+    const btnY = vHeight - btnH - (20 / aspect_size);
+
     const labels = ["EN", "МК", "SQ"];
     const activeLabel = labels[langIndex];
 
-    // 1. Draw the "Cyber" Clipped Shape
+    // Hit area (keep this)
+    langButtonArea = { x: btnX, y: btnY, w: btnW, h: btnH };
+
+    const hovered = mouseIsInside(btnX, btnY, btnW, btnH);
+    const drawColor = hovered ? "#00f2ff" : "#0099a0";
+
+    ctx.save();
+
+    // --- NEW: contrast plate behind the button for bright backgrounds ---
+    if (addBackground) {
+        const pad = 6 / aspect_size;
+        const cut = 10 / aspect_size;
+
+        const bx = btnX - pad;
+        const by = btnY - pad;
+        const bw = btnW + pad * 2;
+        const bh = btnH + pad * 2;
+
+        ctx.shadowBlur = 10 / aspect_size;
+        ctx.shadowColor = "rgba(0,0,0,0.35)";
+
+        // clipped cyber-style background plate
+        ctx.beginPath();
+        ctx.moveTo(bx + cut, by);
+        ctx.lineTo(bx + bw, by);
+        ctx.lineTo(bx + bw, by + bh - cut);
+        ctx.lineTo(bx + bw - cut, by + bh);
+        ctx.lineTo(bx, by + bh);
+        ctx.lineTo(bx, by + cut);
+        ctx.closePath();
+
+        ctx.fillStyle = "rgba(2, 6, 23, 0.72)";        // dark slate plate
+        ctx.fill();
+
+        ctx.strokeStyle = "rgba(148, 163, 184, 0.30)"; // subtle edge
+        ctx.lineWidth = 1 / aspect_size;
+        ctx.stroke();
+
+        ctx.shadowBlur = 0;
+    }
+
+
+    // --- your cyber clipped shape (unchanged) ---
     ctx.beginPath();
     ctx.moveTo(btnX + (10 / aspect_size), btnY);
     ctx.lineTo(btnX + btnW, btnY);
@@ -1806,39 +1969,29 @@ function drawLanguageToggle(vWidth, vHeight, aspect_size) {
     ctx.lineTo(btnX, btnY + (10 / aspect_size));
     ctx.closePath();
 
-
-    // Update the global hit area IMMEDIATELY so other functions see it
-    langButtonArea = { x: btnX, y: btnY, w: btnW, h: btnH };
-
-    // Now check for hover
-    let drawColor = mouseIsInside(btnX, btnY, btnW, btnH) ? "#00f2ff" : "#0099a0";
-
-
-    // 2. Fill and Border (Neon Cyan)
-    ctx.fillStyle = "rgba(0, 242, 255, 0.1)";
+    // Fill and border
+    ctx.fillStyle = "rgba(0, 242, 255, 0.10)";
     ctx.fill();
     ctx.strokeStyle = drawColor;
     ctx.lineWidth = 2 / aspect_size;
     ctx.stroke();
 
-    // 3. Label Text
+    // Label
     ctx.fillStyle = drawColor;
-    ctx.shadowBlur = mouseIsInside(btnX, btnY, btnW, btnH) ? 15 / aspect_size : 5 / aspect_size;
+    ctx.shadowBlur = hovered ? 15 / aspect_size : 6 / aspect_size;
     ctx.shadowColor = drawColor;
     ctx.font = `bold ${Math.round(14 / aspect_size)}px "Courier New", monospace`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(activeLabel, btnX + btnW / 2, btnY + btnH / 2);
 
-    ctx.shadowBlur = 0; // Reset for rest of draw calls
-
-    // Define hit area for the click listener
-    langButtonArea = { x: btnX, y: btnY, w: btnW, h: btnH };
+    ctx.restore();
 }
+
 
 function drawIntroScreen(vWidth, vHeight, aspect_size) {
     // Background
-    const bgGrad = ctx.createRadialGradient(vWidth/2, vHeight/2, 10, vWidth/2, vHeight/2, vWidth);
+    const bgGrad = ctx.createRadialGradient(vWidth / 2, vHeight / 2, 10, vWidth / 2, vHeight / 2, vWidth);
     bgGrad.addColorStop(0, "#0f172a");
     bgGrad.addColorStop(1, "#020617");
     ctx.fillStyle = bgGrad;
@@ -1852,21 +2005,21 @@ function drawIntroScreen(vWidth, vHeight, aspect_size) {
     ctx.shadowBlur = 12 / aspect_size;
     ctx.shadowColor = "#00f2ff";
     ctx.font = `bold ${Math.round(32 / aspect_size)}px monospace`;
-    ctx.fillText(UI_TEXT.INTRO_PHASE_HEADER_TEXT[CURRENT_GAME_LANGUAGE], vWidth/2, vHeight*0.25);
+    ctx.fillText(UI_TEXT.INTRO_PHASE_HEADER_TEXT[CURRENT_GAME_LANGUAGE], vWidth / 2, vHeight * 0.25);
 
     ctx.shadowBlur = 0;
 
     // Body text (keep it short)
     ctx.fillStyle = "#cbd5e1";
     ctx.font = `${Math.round(18 / aspect_size)}px monospace`;
-    const subheader=UI_TEXT.INTRO_PHASE_SUBHEADER_TEXT[CURRENT_GAME_LANGUAGE];
+    const subheader = UI_TEXT.INTRO_PHASE_SUBHEADER_TEXT[CURRENT_GAME_LANGUAGE];
 
     const lines = subheader.split("\n");
 
 
     const lineH = Math.round(26 / aspect_size);
     let startY = vHeight * 0.40;
-    lines.forEach((t, i) => ctx.fillText(t+"", vWidth/2, startY + i * lineH));
+    lines.forEach((t, i) => ctx.fillText(t + "", vWidth / 2, startY + i * lineH));
 
     // Button
     const w = vWidth * 0.35;
@@ -1874,14 +2027,14 @@ function drawIntroScreen(vWidth, vHeight, aspect_size) {
     const x = (vWidth - w) / 2;
     const y = vHeight * 0.68;
 
-    introButton = { x, y, w, h };
+    introButton = {x, y, w, h};
 
     drawCyberButton(UI_TEXT.INTRO_PHASE_BUTTON_TEXT[CURRENT_GAME_LANGUAGE], x, y, w, h, true, aspect_size);
 
     // Small hint
     ctx.fillStyle = "#717d8c";
     ctx.font = `${Math.round(14 / aspect_size)}px monospace`;
-    ctx.fillText(UI_TEXT.INTRO_PHASE_BUTTON_LABEL_TEXT[CURRENT_GAME_LANGUAGE], vWidth/2, y - (15 / aspect_size));
+    ctx.fillText(UI_TEXT.INTRO_PHASE_BUTTON_LABEL_TEXT[CURRENT_GAME_LANGUAGE], vWidth / 2, y - (15 / aspect_size));
 }
 
 function wrapText(context, text, x, y, maxWidth, lineHeight) {
@@ -1952,7 +2105,7 @@ function handlePasswordChoice(text) {
         addPoints(1)
     } else {
         // points -= 1
-        unsafeClicks+=1
+        unsafeClicks += 1
         addPoints(-1)
     }
     startNewRound()
@@ -1964,7 +2117,7 @@ function handleImageChoice(img) {
         addPoints(2)
     } else {
         // points -= 1
-        unsafeClicks+=1
+        unsafeClicks += 1
         addPoints(-1)
     }
     startNewRound()
@@ -2051,9 +2204,7 @@ function endBonusRound() {
         gamePhase = MINIGAME_INTRO_PHASE;
         timeLeft = Infinity;
         lastTime = Date.now();
-    }
-
-    else {
+    } else {
         successSequence = 0
         gamePhase = FINAL_GAME_OVER_PHASE
     }
@@ -2189,15 +2340,15 @@ canvas.addEventListener("click", (e) => {
     const dx = mx - info.x
     const dy = my - info.y
 
-    const clickedInfo = Math.sqrt(dx*dx + dy*dy) <= info.radius;
-    if (clickedInfo && gamePhase === PLAYING_PHASE ) {
+    const clickedInfo = Math.sqrt(dx * dx + dy * dy) <= info.radius;
+    if (clickedInfo && gamePhase === PLAYING_PHASE) {
         info.open = !info.open;
         lastTime = Date.now();
         return;
     }
     if (info.open) return;
 
-    if (isInside(mx,my,langButtonArea.x,langButtonArea.y,langButtonArea.w,langButtonArea.h)) {
+    if (isInside(mx, my, langButtonArea.x, langButtonArea.y, langButtonArea.w, langButtonArea.h)) {
 
         cycleLanguage();
         return;
@@ -2239,7 +2390,7 @@ canvas.addEventListener("click", (e) => {
                 restartButton.h
             )
         ) {
-            unsafeClicks=0
+            // unsafeClicks = 0
             //resetMainGame()
             startGame()
 
@@ -2338,7 +2489,7 @@ canvas.addEventListener('touchstart', (e) => {
         my: touch.clientY - rect.top,
         isTouch: true // Flag to identify touch
     };
-}, { passive: false });
+}, {passive: false});
 
 canvas.addEventListener('touchend', () => {
 
@@ -2349,7 +2500,7 @@ canvas.addEventListener('touchend', () => {
         isTouchActive = false;
     }, 250);
 
-}, { passive: false });
+}, {passive: false});
 
 canvas.addEventListener("mouseleave", () => {
     mouseData = null

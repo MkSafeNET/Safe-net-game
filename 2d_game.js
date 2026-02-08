@@ -28,6 +28,7 @@ import {getRandomLevel} from "./minigame_levels.js";
 import {getTotalLevelsCount} from "./minigame_levels.js";
 import {UI_TEXT} from "./data/ui_text.js";
 import {CURRENT_GAME_LANGUAGE} from "./game.js";
+import {images} from "./game.js";
 
 
 export function Game2D(endGameFunc) {
@@ -42,17 +43,25 @@ export function Game2D(endGameFunc) {
     let imagesLoaded = 0;
     let hoveredFileId = null;
 
-    const corruptedImg = new Image();
-    corruptedImg.src = "./images/file_images/corrupted.png";
-    corruptedImg.onload = () => imagesLoaded++;
+    // const corruptedImg = new Image();
+    // corruptedImg.src = "./images/file_images/corrupted.png";
+    // corruptedImg.onload = () => imagesLoaded++;
 
-    const cleanImg = new Image();
-    cleanImg.src = "./images/file_images/clean.png";
-    cleanImg.onload = () => imagesLoaded++;
+    // const cleanImg = new Image();
+    // cleanImg.src = "./images/file_images/clean.png";
+    // cleanImg.onload = () => imagesLoaded++;
 
-    const desktopBg = new Image();
-    desktopBg.src = "./images/file_images/Desktop_IMG.jpg";
-    desktopBg.onload = () => imagesLoaded++;
+    // const desktopBg = new Image();
+    // desktopBg.src = "./images/file_images/Desktop_IMG.jpg";
+    // desktopBg.onload = () => imagesLoaded++;
+
+    // for (let imagesKey in images) {
+    //     if(images[imagesKey].complete && images[imagesKey].naturalWidth !== 0){
+    //         imagesLoaded++;
+    //     }
+    // }
+
+
 
     const files = Array.from({ length: 11 }, (_, i) => ({
         id: i,
@@ -761,22 +770,22 @@ export function Game2D(endGameFunc) {
 
     Clarity.prototype.update = function () {
 
-        hoveredFileId = null;
-
-        if (uiPhase === UI_PHASE.FILE_SCAN && mouse) {
-            files.forEach(file => {
-                if (file.completed) return;
-
-                if (
-                    mouse.x >= file.x - file.width / 2 &&
-                    mouse.x <= file.x + file.width / 2 &&
-                    mouse.y >= file.y - file.height / 2 &&
-                    mouse.y <= file.y + file.height / 2
-                ) {
-                    hoveredFileId = file.id;
-                }
-            });
-        }
+        // hoveredFileId = null;
+        //
+        // if (uiPhase === UI_PHASE.FILE_SCAN && mouse) {
+        //     files.forEach(file => {
+        //         if (file.completed) return;
+        //
+        //         if (
+        //             mouse.x >= file.x - file.width / 2 &&
+        //             mouse.x <= file.x + file.width / 2 &&
+        //             mouse.y >= file.y - file.height / 2 &&
+        //             mouse.y <= file.y + file.height / 2
+        //         ) {
+        //             hoveredFileId = file.id;
+        //         }
+        //     });
+        // }
 
         // pause physics/input while overlays are active
         if (uiPhase !== UI_PHASE.PLAYING) return;
@@ -963,7 +972,7 @@ export function Game2D(endGameFunc) {
         // bgGrad.addColorStop(1, "#020617");
         // ctx.fillStyle = bgGrad;
         // ctx.fillRect(0, 0, w, h);
-        ctx.drawImage(desktopBg, 0, 0, w, h);
+        ctx.drawImage(images.desktopBg, 0, 0, w, h);
         ctx.restore();
 
         const cols = 3;
@@ -971,25 +980,53 @@ export function Game2D(endGameFunc) {
         const startX = w * 0.05 //w-(w - (cols - 1) * spacing);
         const startY = h * 0.25;
 
-        if (imagesLoaded < 3) {
-            return;
-        }
+        // if (imagesLoaded < 3) {
+        //     return;
+        // }
 
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
 
-        ctx.fillStyle = "#f8f6f6";
-        ctx.shadowBlur = 12 / aspect_size;
-        // ctx.shadowColor = "#00f2ff";
+        // ctx.fillStyle = "#f8f6f6";
+        // ctx.shadowBlur = 12 / aspect_size;
+        // // ctx.shadowColor = "#00f2ff";
+        // ctx.font = `bold ${Math.round(32 / aspect_size)}px monospace`;
+        // ctx.fillText(UI_TEXT.FILES_SCREEN_TITLE[CURRENT_GAME_LANGUAGE],w/2, h*0.1);
+        //
+        //
+        // ctx.fillStyle = "#f8f6f6";
+        // ctx.shadowBlur = 12 / aspect_size;
+        // // ctx.shadowColor = "#00f2ff";
+        // ctx.font = `${Math.round(20 / aspect_size)}px monospace`;
+        // ctx.fillText(UI_TEXT.FILES_SCREEN_DESCRIPTION[CURRENT_GAME_LANGUAGE],w/2, h*0.15);
+
+        // TITLE — dark ink + subtle cyan accent (readable on white)
+        ctx.textAlign = "center";
+        ctx.textBaseline = "middle";
+
+        const startTextY = 0.06
+        const startTextDescriptionY = 0.12
+
+        ctx.fillStyle = "#0f172a"; // deep slate
+        ctx.shadowBlur = 6 / aspect_size;
+        ctx.shadowColor = "rgba(0, 242, 255, 0.35)";
         ctx.font = `bold ${Math.round(32 / aspect_size)}px monospace`;
-        ctx.fillText(UI_TEXT.FILES_SCREEN_TITLE[CURRENT_GAME_LANGUAGE],w/2, h*0.1);
+        ctx.fillText(UI_TEXT.FILES_SCREEN_TITLE[CURRENT_GAME_LANGUAGE], w / 2, h * startTextY);
 
+        // UNDERLINE (HUD accent, same visual language)
+        ctx.shadowBlur = 0;
+        ctx.strokeStyle = "rgba(0, 242, 255, 0.45)";
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(w * 0.22, h * startTextY + (18 / aspect_size));
+        ctx.lineTo(w * 0.78, h * startTextY + (18 / aspect_size));
+        ctx.stroke();
 
-        ctx.fillStyle = "#f8f6f6";
-        ctx.shadowBlur = 12 / aspect_size;
-        // ctx.shadowColor = "#00f2ff";
+        // DESCRIPTION — slightly lighter slate
+        ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
+        ctx.shadowBlur = 0;
         ctx.font = `${Math.round(20 / aspect_size)}px monospace`;
-        ctx.fillText(UI_TEXT.FILES_SCREEN_DESCRIPTION[CURRENT_GAME_LANGUAGE],w/2, h*0.15);
+        ctx.fillText(UI_TEXT.FILES_SCREEN_DESCRIPTION[CURRENT_GAME_LANGUAGE], w / 2, h * startTextDescriptionY);
 
         ctx.shadowBlur = 0;
 
@@ -1000,7 +1037,7 @@ export function Game2D(endGameFunc) {
             file.x = startX + col * spacing;
             file.y = startY + row * spacing;
 
-            const img = file.completed ? cleanImg : corruptedImg;
+            const img = file.completed ? images.cleanIcon : images.uncleanIcon;
 
             ctx.save();
 
@@ -1226,11 +1263,42 @@ export function Game2D(endGameFunc) {
         const xCss = e.clientX - r.left;
         const yCss = e.clientY - r.top;
 
+        // viewport coordinates (matches drawFilesGrid: w/h = game.viewport)
         mouse = {
             x: xCss * (game.viewport.x / r.width),
             y: yCss * (game.viewport.y / r.height),
         };
+
+        // hover calc HERE (single source of truth)
+        hoveredFileId = null;
+        if (uiPhase === UI_PHASE.FILE_SCAN) {
+            for (const file of files) {
+                if (file.completed) continue;
+
+                if (
+                    mouse.x >= file.x - file.width / 2 &&
+                    mouse.x <= file.x + file.width / 2 &&
+                    mouse.y >= file.y - file.height / 2 &&
+                    mouse.y <= file.y + file.height / 2
+                ) {
+                    hoveredFileId = file.id;
+                    break;
+                }
+            }
+        }
     });
+
+    // canvas.addEventListener("mousemove", (e) => {
+    //     const r = canvas.getBoundingClientRect();
+    //
+    //     const xCss = e.clientX - r.left;
+    //     const yCss = e.clientY - r.top;
+    //
+    //     mouse = {
+    //         x: xCss * (game.viewport.x / r.width),
+    //         y: yCss * (game.viewport.y / r.height),
+    //     };
+    // });
 
 
     canvas.addEventListener("mouseleave", () => { mouse = null; hoveredFileId = null;});
@@ -1290,31 +1358,31 @@ export function Game2D(endGameFunc) {
     });
 
 
-    canvas.addEventListener("mousemove", (e) => {
-        const rect = canvas.getBoundingClientRect();
-        // const mx = e.clientX - rect.left;
-        // const my = e.clientY - rect.top;
-        const scaleX = canvas.width / rect.width;
-        const scaleY = canvas.height / rect.height;
-
-        const mx = (e.clientX - rect.left) * scaleX;
-        const my = (e.clientY - rect.top) * scaleY;
-
-        hoveredFileId = null;
-
-        files.forEach(file => {
-            if (file.completed) return; //
-
-            if (
-                mx >= file.x - file.width / 2 &&
-                mx <= file.x + file.width / 2 &&
-                my >= file.y - file.height / 2 &&
-                my <= file.y + file.height / 2
-            ) {
-                hoveredFileId = file.id;
-            }
-        });
-    });
+    // canvas.addEventListener("mousemove", (e) => {
+    //     const rect = canvas.getBoundingClientRect();
+    //     // const mx = e.clientX - rect.left;
+    //     // const my = e.clientY - rect.top;
+    //     const scaleX = canvas.width / rect.width;
+    //     const scaleY = canvas.height / rect.height;
+    //
+    //     const mx = (e.clientX - rect.left) * scaleX;
+    //     const my = (e.clientY - rect.top) * scaleY;
+    //
+    //     hoveredFileId = null;
+    //
+    //     files.forEach(file => {
+    //         if (file.completed) return; //
+    //
+    //         if (
+    //             mx >= file.x - file.width / 2 &&
+    //             mx <= file.x + file.width / 2 &&
+    //             my >= file.y - file.height / 2 &&
+    //             my <= file.y + file.height / 2
+    //         ) {
+    //             hoveredFileId = file.id;
+    //         }
+    //     });
+    // });
 
 
 
