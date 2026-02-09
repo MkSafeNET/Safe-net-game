@@ -379,7 +379,7 @@ function startGame() {
     timeElapsed = 0;
     gameEnded = false;
 
-    gamePhase = MINIGAME_INTRO_PHASE;
+    gamePhase = INTRO_PHASE;
 
     gameRunning = true;
     lastTime = Date.now();
