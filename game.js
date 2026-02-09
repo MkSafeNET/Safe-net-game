@@ -46,6 +46,8 @@ const FINAL_GAME_OVER_PHASE = "finalGameOver"
 const MINIGAME_INTRO_PHASE = "minigameIntro";
 const DESKTOP_PREVIEW_PHASE = "desktop_preview";
 
+let retryPromtScreensPerGame = 0
+
 
 // const MINI_GAME_PHASE = "miniGame"
 
@@ -360,6 +362,7 @@ function startGame() {
     // passwordChoices = [];
     // currentImages = [];
 
+    retryPromtScreensPerGame = 0
     unsafeClicks = 0
     points = 0;
     successSequence = 0;
@@ -685,10 +688,15 @@ function draw() {
         return;
     }
 
-    if (gamePhase === RETRY_PROMPT_PHASE) {
+    if (gamePhase === RETRY_PROMPT_PHASE && retryPromtScreensPerGame<1) {
         drawRetryPrompt(vWidth, vHeight, aspect_size)
         drawLanguageToggle(vWidth, vHeight, aspect_size)
         if (blurred) ctx.restore();
+        return
+    }
+
+    if(retryPromtScreensPerGame>=1 && gamePhase === RETRY_PROMPT_PHASE){
+        gamePhase = FINAL_GAME_OVER_PHASE
         return
     }
 
@@ -2411,6 +2419,7 @@ canvas.addEventListener("click", (e) => {
     if (gamePhase === BONUS_INTRO_PHASE && bonusIntroButton) {
         if (isInside(mx, my, bonusIntroButton.x, bonusIntroButton.y, bonusIntroButton.w, bonusIntroButton.h)) {
             startBonusRound();
+            retryPromtScreensPerGame += 1
             return;
         }
     }
@@ -2431,15 +2440,11 @@ canvas.addEventListener("click", (e) => {
         const button_spacing = Math.round(20 / aspect_size);
 
         if (isInside(mx, my, vWidth / 2 - buttonW - button_spacing, vHeight * 0.56, buttonW, buttonH)) {
-
-            // startBonusRound()
             gamePhase = BONUS_INTRO_PHASE;
             return
         }
 
         if (isInside(mx, my, vWidth / 2 + button_spacing, vHeight * 0.56, buttonW, buttonH)) {
-
-            // gamePhase = INTRO_PHASE
             startGame()
             return
         }
