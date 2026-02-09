@@ -24,7 +24,7 @@ const dpr = window.devicePixelRatio || 1
 
 const SCORE_FONT_SIZE = 14
 const PASSWORDS_FONT_SIZE = 22
-// const TOTAL_TIMER_FONT_SIZE = 18
+const TOTAL_TIMER_FONT_SIZE = 18
 const TIMER_RADIUS_SIZE = 20
 const INFO_BUTTON_RADIUS_SIZE = 18
 const INSTRUCTION_TEXT_FONT_SIZE = 20
@@ -46,7 +46,7 @@ const FINAL_GAME_OVER_PHASE = "finalGameOver"
 const MINIGAME_INTRO_PHASE = "minigameIntro";
 const DESKTOP_PREVIEW_PHASE = "desktop_preview";
 
-let retryPromtScreensPerGame = 0
+let retryPromptScreensPerGame = 0
 
 
 // const MINI_GAME_PHASE = "miniGame"
@@ -90,8 +90,12 @@ let notSafePasswords = []
 
 let currentRoundMode = PASSWORDS_MODE
 
-const gameDuration = 20
-let roundDuration = 5
+const GAME_DURATION = 20;
+const PASSWORD_ROUND_DURATION = 5;
+const IMAGE_ROUND_DURATION = 15;
+
+const gameDuration = GAME_DURATION
+let roundDuration = PASSWORD_ROUND_DURATION
 
 let timeElapsed = 0
 let gameEnded = false
@@ -362,7 +366,7 @@ function startGame() {
     // passwordChoices = [];
     // currentImages = [];
 
-    retryPromtScreensPerGame = 0
+    retryPromptScreensPerGame = 0
     unsafeClicks = 0
     points = 0;
     successSequence = 0;
@@ -447,7 +451,7 @@ function getPasswordBoxDimensions(vWidth, vHeight) {
  */
 function spawnTwoPasswords() {
     roundTime = 5
-    roundDuration = 5
+    roundDuration = PASSWORD_ROUND_DURATION
 
     passwordChoices = []
     const vWidth = canvas.width / dpr
@@ -488,10 +492,10 @@ function spawnTwoImages() {
         return;
     }
 
-    roundTime = 10
-    timeLeft = 10
-    roundDuration = 10
-    timeElapsed = Math.max(0, timeElapsed - 2);
+    roundTime = IMAGE_ROUND_DURATION
+    timeLeft = IMAGE_ROUND_DURATION
+    roundDuration = IMAGE_ROUND_DURATION
+    timeElapsed = Math.max(0, timeElapsed - 7);
 
 
     currentImages = [];
@@ -612,19 +616,19 @@ function addPoints(delta) {
     }
 }
 
-// function drawTotalTimer(vWidth, vHeight, aspect_size) {
-//
-//     const font_size = Math.round(TOTAL_TIMER_FONT_SIZE / aspect_size)
-//
-//     ctx.save()
-//     ctx.font = `bold ${font_size}px monospace`
-//     // Draw the "Time Remaining" text at the bottom
-//     const remaining = Math.max(0, Math.ceil(gameDuration - timeElapsed))
-//     ctx.fillStyle = "#f6f3f3"
-//     ctx.textAlign = "center"
-//     ctx.fillText(`Time left: ${remaining}s`, vWidth / 2, vHeight - 20)
-//     ctx.restore()
-// }
+function drawTotalTimer(vWidth, vHeight, aspect_size) {
+
+    const font_size = Math.round(TOTAL_TIMER_FONT_SIZE / aspect_size)
+
+    ctx.save()
+    ctx.font = `bold ${font_size}px monospace`
+    // Draw the "Time Remaining" text at the bottom
+    const remaining = Math.max(0, Math.ceil(gameDuration - timeElapsed))
+    ctx.fillStyle = "#f6f3f3"
+    ctx.textAlign = "center"
+    ctx.fillText(`Time left: ${remaining}s`, vWidth / 2, vHeight - 20)
+    ctx.restore()
+}
 
 /**
  * Function that draws everything,NOTE: vWidth and vHeight are used AND NOT canvas.width and canvas.height because
@@ -688,14 +692,14 @@ function draw() {
         return;
     }
 
-    if (gamePhase === RETRY_PROMPT_PHASE && retryPromtScreensPerGame<1) {
+    if (gamePhase === RETRY_PROMPT_PHASE && retryPromptScreensPerGame<1) {
         drawRetryPrompt(vWidth, vHeight, aspect_size)
         drawLanguageToggle(vWidth, vHeight, aspect_size)
         if (blurred) ctx.restore();
         return
     }
 
-    if(retryPromtScreensPerGame>=1 && gamePhase === RETRY_PROMPT_PHASE){
+    if(retryPromptScreensPerGame>=1 && gamePhase === RETRY_PROMPT_PHASE){
         gamePhase = FINAL_GAME_OVER_PHASE
         return
     }
@@ -728,7 +732,7 @@ function draw() {
         drawImages(vWidth, vHeight, aspect_size)
     }
 
-    // drawTotalTimer(vWidth, vHeight, aspect_size)
+    drawTotalTimer(vWidth, vHeight, aspect_size)
 
     drawLanguageToggle(vWidth, vHeight, aspect_size)
     if (blurred) {
@@ -1264,43 +1268,43 @@ function drawInstructions(vWidth, vHeight, aspect_size) {
     ctx.restore();
 }
 
-function drawMaxUnsafeClicks(vWidth, aspect_size) {
-    // === anchor to score bar ===
-    const barX = 20 / aspect_size;
-    const barY = 25 / aspect_size;
-    const barH = 18 / aspect_size;
-
-    const textY = barY + barH + (18 / aspect_size); // ⬅ below bar
-    const textX = barX;
-
-    ctx.save();
-
-    ctx.font = `bold ${Math.round(SCORE_FONT_SIZE / aspect_size)}px "Courier New", monospace`;
-    ctx.textAlign = "left";
-    ctx.textBaseline = "alphabetic";
-
-    const remaining = MAX_UNSAFE_CLICKS - unsafeClicks;
-    const textBefore = "Антивирусот може да научи уште ";
-    const textAfter = " небезбедни потези";
-
-    // before
-    ctx.fillStyle = "#00f2ff";
-    ctx.fillText(textBefore, textX, textY);
-
-    const widthBefore = ctx.measureText(textBefore).width;
-
-    // number
-    ctx.fillStyle = "#fb0000";
-    ctx.fillText(String(remaining), textX + widthBefore, textY);
-
-    const widthNumber = ctx.measureText(String(remaining)).width;
-
-    // after
-    ctx.fillStyle = "#00f2ff";
-    ctx.fillText(textAfter, textX + widthBefore + widthNumber, textY);
-
-    ctx.restore();
-}
+// function drawMaxUnsafeClicks(vWidth, aspect_size) {
+//     // === anchor to score bar ===
+//     const barX = 20 / aspect_size;
+//     const barY = 25 / aspect_size;
+//     const barH = 18 / aspect_size;
+//
+//     const textY = barY + barH + (18 / aspect_size); // ⬅ below bar
+//     const textX = barX;
+//
+//     ctx.save();
+//
+//     ctx.font = `bold ${Math.round(SCORE_FONT_SIZE / aspect_size)}px "Courier New", monospace`;
+//     ctx.textAlign = "left";
+//     ctx.textBaseline = "alphabetic";
+//
+//     const remaining = MAX_UNSAFE_CLICKS - unsafeClicks;
+//     const textBefore = "Антивирусот може да научи уште ";
+//     const textAfter = " небезбедни потези";
+//
+//     // before
+//     ctx.fillStyle = "#00f2ff";
+//     ctx.fillText(textBefore, textX, textY);
+//
+//     const widthBefore = ctx.measureText(textBefore).width;
+//
+//     // number
+//     ctx.fillStyle = "#fb0000";
+//     ctx.fillText(String(remaining), textX + widthBefore, textY);
+//
+//     const widthNumber = ctx.measureText(String(remaining)).width;
+//
+//     // after
+//     ctx.fillStyle = "#00f2ff";
+//     ctx.fillText(textAfter, textX + widthBefore + widthNumber, textY);
+//
+//     ctx.restore();
+// }
 
 function drawUnsafeIntegrity(vWidth, aspect_size) {
 
@@ -2195,10 +2199,10 @@ function handleBonusAnswer(index) {
 function endBonusRound() {
     bonusActive = false
 
-    if (bonusScore >= 3 && bonusScore < 5) {
+    if (bonusScore >= 3 && bonusScore < 4) {
         // points += bonusScore;
         resetMainGame()
-    } else if (bonusScore === 5) {
+    } else if (bonusScore >= 4) {
         // points += bonusScore;
 
 
@@ -2419,7 +2423,7 @@ canvas.addEventListener("click", (e) => {
     if (gamePhase === BONUS_INTRO_PHASE && bonusIntroButton) {
         if (isInside(mx, my, bonusIntroButton.x, bonusIntroButton.y, bonusIntroButton.w, bonusIntroButton.h)) {
             startBonusRound();
-            retryPromtScreensPerGame += 1
+            retryPromptScreensPerGame += 1
             return;
         }
     }
