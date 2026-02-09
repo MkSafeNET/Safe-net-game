@@ -32,6 +32,10 @@ import {images} from "./game.js";
 
 
 export function Game2D(endGameFunc) {
+
+    const MAX_LIVES = 3;   // set 1,2,3 however you want (or pass in)
+    let lives = MAX_LIVES;
+
     const UI_PHASE = {
         PLAYING: "playing",
         LEVEL_CLEAR: "levelClear",   // timed screen
@@ -157,18 +161,31 @@ export function Game2D(endGameFunc) {
             // alert("You died!");
             // setHappyEndFalse();
             // StopMiniGame();
-            uiPhase = UI_PHASE.DEATH;
-            pendingAction = "death";
             setHappyEndFalse();
 
             game.key.left = game.key.right = game.key.up = false;
             game.player.vel.x = 0;
             game.player.vel.y = 0;
+
+            lives -= 1;
+
+            if (lives > 0) {
+                // NOT game over: go back to file scan so player retries
+                uiPhase = UI_PHASE.FILE_SCAN;
+                current_file = 0
+
+                return;
+            }
+
+            uiPhase = UI_PHASE.DEATH;
+            pendingAction = "death";
+
         },
 
         unlock(game) {
             game.current_map.keys[10].solid = 0;
             game.current_map.keys[10].colour = "#888";
+            game.current_map.unlocked = true
         }
     });
 
@@ -234,6 +251,8 @@ export function Game2D(endGameFunc) {
 
             /* An array representing the map tiles. Each number corresponds to a key */
             data: structuredClone(level),
+
+            unlocked: false,
 
             /* Default gravity of the map */
 
@@ -761,6 +780,102 @@ export function Game2D(endGameFunc) {
         context.fill();
     };
 
+    Clarity.prototype.draw_statuses = function (ctx,vW,vH) {
+
+        // Only show HUD during gameplay (you can remove this check if you want it everywhere)
+        if (uiPhase !== UI_PHASE.PLAYING) return;
+
+        const aspect = 900 / vW;
+
+        // ---- Layout ----
+        const pad = 14 / aspect;
+        const x = pad;
+        const y = pad;
+
+        const barW = 34 / aspect;
+        const barH = 10 / aspect;
+        const gap = 6 / aspect;
+
+        // ---- Draw lives as bars ----
+        ctx.save();
+
+        // subtle backing plate so it’s readable on any background
+        const plateW = (barW + gap) * MAX_LIVES + (pad * 0.5) ;
+        const plateH = barH + pad;
+        ctx.fillStyle = "rgba(2, 6, 23, 0.45)";
+        ctx.strokeStyle = "rgba(0, 242, 255, 0.25)";
+        ctx.lineWidth = 1 / aspect;
+        ctx.beginPath();
+        ctx.roundRect(x - pad * 0.5, y - pad * 0.5, plateW, plateH, 8 / aspect);
+        ctx.fill();
+        ctx.stroke();
+
+        // bars
+        for (let i = 0; i < MAX_LIVES; i++) {
+            const bx = x + i * (barW + gap);
+            const by = y;
+
+            // outline
+            ctx.strokeStyle = "rgba(0, 0, 0, 0.45)";
+            ctx.lineWidth = 1 / aspect;
+            ctx.strokeRect(bx, by, barW, barH);
+
+            // fill: gold if alive, dark if lost
+            if (i < lives) {
+                ctx.fillStyle = "rgba(255, 215, 0, 0.95)"; // gold
+                ctx.shadowBlur = 10 / aspect;
+                ctx.shadowColor = "rgba(255, 215, 0, 0.35)";
+            } else {
+                ctx.fillStyle = "rgba(15, 23, 42, 0.8)"; // empty
+                ctx.shadowBlur = 0;
+            }
+
+            ctx.fillRect(bx, by, barW, barH);
+            ctx.shadowBlur = 0;
+        }
+
+        // ---- Unlock icon under lives ----
+        // You need to have an image ready: images.unlockIcon (or rename below)
+        // If you don’t have one yet, I’ll show a simple drawn icon fallback after this block.
+        if (this.current_map.unlocked && images.unlockedIcon) {
+            const iconSize = 26 / aspect;
+            const iconX = x;
+            const iconY = y + barH + 15 / aspect;
+
+            // small plate behind the icon
+            ctx.fillStyle = "rgba(2, 6, 23, 0.45)";
+            ctx.strokeStyle = "rgba(0, 242, 255, 0.25)";
+            ctx.lineWidth = 1 / aspect;
+            ctx.beginPath();
+            ctx.roundRect(iconX - 6 / aspect, iconY - 6 / aspect, iconSize + 12 / aspect, iconSize + 12 / aspect, 8 / aspect);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.drawImage(images.unlockedIcon, iconX, iconY, iconSize, iconSize);
+        } else if (this.current_map.unlocked) {
+            // Fallback: draw a tiny "UNLOCK" badge if you don’t have an icon yet
+            const bx = x;
+            const by = y + barH + 10 / aspect;
+
+            ctx.fillStyle = "rgba(34, 197, 94, 0.18)";
+            ctx.strokeStyle = "rgba(34, 197, 94, 0.9)";
+            ctx.lineWidth = 1 / aspect;
+            ctx.beginPath();
+            ctx.roundRect(bx, by, 92 / aspect, 24 / aspect, 8 / aspect);
+            ctx.fill();
+            ctx.stroke();
+
+            ctx.fillStyle = "rgba(248, 250, 252, 0.95)";
+            ctx.font = `bold ${Math.round(12 / aspect)}px monospace`;
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("UNLOCK", bx + (92 / aspect) / 2, by + (24 / aspect) / 2);
+        }
+
+        ctx.restore();
+
+    }
+
     // Clarity.prototype.update = function () {
     //
     //     this.update_player();
@@ -796,6 +911,8 @@ export function Game2D(endGameFunc) {
 
         const vW = this.viewport.x;
         const vH = this.viewport.y;
+
+        this.draw_statuses(context,vW,vH)
 
         uiButtons.primary = null;
 
@@ -850,7 +967,7 @@ export function Game2D(endGameFunc) {
 
         if (uiPhase === UI_PHASE.FILE_SCAN) {
             drawFilesGrid(context, this.viewport.x, this.viewport.y);
-            return; // ⬅️ важно: не цртај ништо друго
+            return;
         }
     };
 
@@ -1224,6 +1341,7 @@ export function Game2D(endGameFunc) {
         uiTimer = 0;
         pendingAction = null;
         uiButtons.primary = null;
+        lives = MAX_LIVES;
 
         // reset progress
         passedLevels = [];

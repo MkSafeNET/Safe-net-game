@@ -24,7 +24,7 @@ const dpr = window.devicePixelRatio || 1
 
 const SCORE_FONT_SIZE = 14
 const PASSWORDS_FONT_SIZE = 22
-const TOTAL_TIMER_FONT_SIZE = 18
+// const TOTAL_TIMER_FONT_SIZE = 18
 const TIMER_RADIUS_SIZE = 20
 const INFO_BUTTON_RADIUS_SIZE = 18
 const INSTRUCTION_TEXT_FONT_SIZE = 20
@@ -47,6 +47,8 @@ const MINIGAME_INTRO_PHASE = "minigameIntro";
 const DESKTOP_PREVIEW_PHASE = "desktop_preview";
 
 let retryPromptScreensPerGame = 0
+
+let syncedWithLastRound = false
 
 
 // const MINI_GAME_PHASE = "miniGame"
@@ -76,11 +78,15 @@ let langButtonArea = {}
 let mainRafId = null;
 let isTouchActive = false;
 
+const GAME_DURATION = 20;
+const PASSWORD_ROUND_DURATION = 5;
+const IMAGE_ROUND_DURATION = 15;
+
 let points = 0
 let gameRunning = false
 let passwordChoices = []
 let currentImages = []
-let roundTime = 5
+let roundTime = PASSWORD_ROUND_DURATION
 let timeLeft = roundTime
 let lastTime = Date.now()
 let reallySafePasswords = []
@@ -90,9 +96,6 @@ let notSafePasswords = []
 
 let currentRoundMode = PASSWORDS_MODE
 
-const GAME_DURATION = 20;
-const PASSWORD_ROUND_DURATION = 5;
-const IMAGE_ROUND_DURATION = 15;
 
 const gameDuration = GAME_DURATION
 let roundDuration = PASSWORD_ROUND_DURATION
@@ -147,7 +150,8 @@ const MAX_IMAGES_TO_CHECK_BAD = 20
 export const images = {
     desktopBg: new Image(),
     cleanIcon: new Image(),
-    uncleanIcon: new Image()
+    uncleanIcon: new Image(),
+    unlockedIcon: new Image()
 };
 
 // const desktopBg = new Image();
@@ -185,7 +189,7 @@ const filesData = [
 ];
 
 let desktopPreviewStartTime = null;
-const DESKTOP_PREVIEW_DURATION = 3000; // 5 секунди
+const DESKTOP_PREVIEW_DURATION = 1800; // 4 секунди
 
 
 /**
@@ -260,6 +264,7 @@ async function loadGameImages() {
         loadIntoImage(images.desktopBg, "images/file_images/Desktop_IMG.jpg"),
         loadIntoImage(images.cleanIcon, "images/file_images/clean.png"),
         loadIntoImage(images.uncleanIcon, "images/file_images/corrupted.png"),
+        loadIntoImage(images.unlockedIcon, "images/file_images/unlocked.png"),
     ]);
 
     // Optional: hard-fail if any of these 3 fail
@@ -369,11 +374,12 @@ function startGame() {
     retryPromptScreensPerGame = 0
     unsafeClicks = 0
     points = 0;
+    syncedWithLastRound = false
     successSequence = 0;
     timeElapsed = 0;
     gameEnded = false;
 
-    gamePhase = INTRO_PHASE;
+    gamePhase = MINIGAME_INTRO_PHASE;
 
     gameRunning = true;
     lastTime = Date.now();
@@ -382,6 +388,7 @@ function startGame() {
 
 function startTraining() {
     points = 0;
+    syncedWithLastRound = false
     timeElapsed = 0;
     // gamePhase = MINIGAME_INTRO_PHASE;
     gamePhase = PLAYING_PHASE;
@@ -450,7 +457,7 @@ function getPasswordBoxDimensions(vWidth, vHeight) {
  * of screens having higher DPI so canvas needs to be scaled
  */
 function spawnTwoPasswords() {
-    roundTime = 5
+    roundTime = PASSWORD_ROUND_DURATION
     roundDuration = PASSWORD_ROUND_DURATION
 
     passwordChoices = []
@@ -495,7 +502,10 @@ function spawnTwoImages() {
     roundTime = IMAGE_ROUND_DURATION
     timeLeft = IMAGE_ROUND_DURATION
     roundDuration = IMAGE_ROUND_DURATION
-    timeElapsed = Math.max(0, timeElapsed - 7);
+    if(!syncedWithLastRound){
+        timeElapsed = Math.max(0, timeElapsed - 7);
+    }
+
 
 
     currentImages = [];
@@ -560,10 +570,24 @@ function update() {
 
 
         if (timeLeft <= 0) {
-            startNewRound()
+            if (syncedWithLastRound) {
+                // не стартувај нова рунда; wave треба да заврши сега
+                timeElapsed = gameDuration; // или само не прави return и пушти да падне долу
+            } else {
+                startNewRound();
+                return;
+            }
         }
 
         if (timeElapsed >= gameDuration) {
+
+            if(!syncedWithLastRound && timeElapsed!== Infinity){
+                console.log("synced")
+                syncedWithLastRound = true
+                timeElapsed = GAME_DURATION - timeLeft
+                return;
+            }
+
             if (points >= WAVE_TARGET) {
                 gamePhase = SUCCESS_PHASE
                 phaseTimer = 3
@@ -598,6 +622,7 @@ function resetMainGame() {
     gameRunning = true
     gamePhase = PLAYING_PHASE
     points = 0
+    syncedWithLastRound = false
     startNewRound()
     lastTime = Date.now()
     startMainLoop()
@@ -612,23 +637,23 @@ function addPoints(delta) {
 
     // if we hit 10, end this sequence immediately
     if (points >= WAVE_TARGET) {
-        timeElapsed = gameDuration + 10; // triggers success check in update()
+        timeElapsed = Infinity; // triggers success check in update()
     }
 }
 
-function drawTotalTimer(vWidth, vHeight, aspect_size) {
-
-    const font_size = Math.round(TOTAL_TIMER_FONT_SIZE / aspect_size)
-
-    ctx.save()
-    ctx.font = `bold ${font_size}px monospace`
-    // Draw the "Time Remaining" text at the bottom
-    const remaining = Math.max(0, Math.ceil(gameDuration - timeElapsed))
-    ctx.fillStyle = "#f6f3f3"
-    ctx.textAlign = "center"
-    ctx.fillText(`Time left: ${remaining}s`, vWidth / 2, vHeight - 20)
-    ctx.restore()
-}
+// function drawTotalTimer(vWidth, vHeight, aspect_size) {
+//
+//     const font_size = Math.round(TOTAL_TIMER_FONT_SIZE / aspect_size)
+//
+//     ctx.save()
+//     ctx.font = `bold ${font_size}px monospace`
+//     // Draw the "Time Remaining" text at the bottom
+//     const remaining = Math.max(0, Math.ceil(gameDuration - timeElapsed))
+//     ctx.fillStyle = "#f6f3f3"
+//     ctx.textAlign = "center"
+//     ctx.fillText(`Time left: ${remaining}s`, vWidth / 2, vHeight - 20)
+//     ctx.restore()
+// }
 
 /**
  * Function that draws everything,NOTE: vWidth and vHeight are used AND NOT canvas.width and canvas.height because
@@ -732,7 +757,7 @@ function draw() {
         drawImages(vWidth, vHeight, aspect_size)
     }
 
-    drawTotalTimer(vWidth, vHeight, aspect_size)
+    // drawTotalTimer(vWidth, vHeight, aspect_size)
 
     drawLanguageToggle(vWidth, vHeight, aspect_size)
     if (blurred) {
@@ -1111,7 +1136,7 @@ function drawGameOver(vWidth, vHeight, aspect_size) {
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
 
-    console.log(points)
+    // console.log(points)
 
     // Game Over Header
     ctx.shadowBlur = 15 / aspect_size;
