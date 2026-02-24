@@ -33,7 +33,7 @@ import {images} from "./game.js";
 
 export function Game2D(endGameFunc) {
 
-    const MAX_LIVES = 3;   // set 1,2,3 however you want (or pass in)
+    const MAX_LIVES = 1;   // set 1,2,3 however you want (or pass in)
     let lives = MAX_LIVES;
 
     const UI_PHASE = {
@@ -792,7 +792,7 @@ export function Game2D(endGameFunc) {
         const x = pad;
         const y = pad;
 
-        const barW = 34 / aspect;
+        const barW = 34 * (3 / MAX_LIVES) / aspect;
         const barH = 10 / aspect;
         const gap = 6 / aspect;
 
