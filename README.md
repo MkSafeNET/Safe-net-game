@@ -238,7 +238,7 @@ Team `Denno`:
 In the first part, the player trains the antivirus. With every choice between safe and unsafe passwords or situations,
 the player shows the antivirus what should be considered a threat. The timer represents an active attack in progress,
 during which the antivirus must learn quickly. One successful wave means the antivirus has learned something but is not
-yet certain enough. Therefore, three successful wave are required for the antivirus to be considered sufficiently
+yet certain enough. Therefore, three successful waves are required for the antivirus to be considered sufficiently
 trained.
 
 #### Part Two: Correction and Additional Training
