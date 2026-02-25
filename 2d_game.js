@@ -912,7 +912,7 @@ export function Game2D(endGameFunc) {
         const vW = this.viewport.x;
         const vH = this.viewport.y;
 
-        this.draw_statuses(context,vW,vH)
+        if(lives>1) this.draw_statuses(context,vW,vH)
 
         uiButtons.primary = null;
 
