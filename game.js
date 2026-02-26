@@ -131,6 +131,8 @@ let bonusIntroButton = null;
 
 let restartButton = null
 
+let hackAlertButtonArea = null;
+
 let mouseData = null
 
 let minigameReason = null;
@@ -175,23 +177,22 @@ const info = {
     text: HELP_TEXT[CURRENT_GAME_LANGUAGE]
 }
 const filesData = [
-    {name: "reports", clean: true},
-    {name: "images", clean: true},
-    {name: "videos", clean: true},
-    {name: "music", clean: true},
-    {name: "notes", clean: true},
-    {name: "backups", clean: true},
-    {name: "system32", clean: true},
-    {name: "data", clean: true},
-    {name: "documents", clean: true},
-    {name: "presentations", clean: true},
-    {name: "archives", clean: true}
+    {name: "reports", clean: true, corruptedAt: null},
+    {name: "images", clean: true, corruptedAt: null},
+    {name: "videos", clean: true, corruptedAt: null},
+    {name: "music", clean: true, corruptedAt: null},
+    {name: "notes", clean: true, corruptedAt: null},
+    {name: "backups", clean: true, corruptedAt: null},
+    {name: "system32", clean: true, corruptedAt: null},
+    {name: "data", clean: true, corruptedAt: null},
+    {name: "documents", clean: true, corruptedAt: null},
+    {name: "presentations", clean: true, corruptedAt: null},
+    {name: "archives", clean: true, corruptedAt: null}
 ];
 
 let desktopPreviewStartTime = null;
 const DESKTOP_PREVIEW_DURATION = 450 * 4 // 4 секунди
 const fileDuration = 500;
-
 
 
 /**
@@ -381,7 +382,7 @@ function startGame() {
     timeElapsed = 0;
     gameEnded = false;
 
-    gamePhase = INTRO_PHASE;
+    gamePhase = MINIGAME_INTRO_PHASE;
 
     gameRunning = true;
     lastTime = Date.now();
@@ -504,10 +505,9 @@ function spawnTwoImages() {
     roundTime = IMAGE_ROUND_DURATION
     timeLeft = IMAGE_ROUND_DURATION
     roundDuration = IMAGE_ROUND_DURATION
-    if(!syncedWithLastRound){
+    if (!syncedWithLastRound) {
         timeElapsed = Math.max(0, timeElapsed - 7);
     }
-
 
 
     currentImages = [];
@@ -552,6 +552,38 @@ function update() {
 
     if (info.open) return;
 
+    if (gamePhase === DESKTOP_PREVIEW_PHASE) {
+        const elapsed = performance.now() - desktopPreviewStartTime;
+
+        const initialDelay = 500;
+        const adjustedElapsed = elapsed - initialDelay;
+        if (adjustedElapsed >= 0) {
+            const fileIndex = Math.floor(adjustedElapsed / fileDuration);
+
+            for (let i = 0; i <= fileIndex && i < filesData.length; i++) {
+                if (filesData[i].clean) {
+                    filesData[i].clean = false;
+                    filesData[i].corruptedAt = performance.now()
+                }
+
+            }
+
+            // No auto-transition — button click handles it now
+            // const allCorruptedAfter = filesData.length * fileDuration;
+            // const waitAfter = 5000;
+            // if (adjustedElapsed >= allCorruptedAfter + waitAfter) {
+            //     desktopPreviewStartTime = null;
+            //     filesData.forEach(f => {
+            //         f.clean = true;
+            //         f.corruptedAt = null;
+            //     })
+            //     startTraining();
+            // }
+        }
+
+        return;
+    }
+
     if (gamePhase === MINIGAME_INTRO_PHASE) return;
     if (gamePhase === INTRO_PHASE) return;
     // if (gamePhase === DESKTOP_PREVIEW_PHASE) return;
@@ -584,7 +616,7 @@ function update() {
 
         if (timeElapsed >= gameDuration) {
 
-            if(!syncedWithLastRound && timeElapsed!== Infinity){
+            if (!syncedWithLastRound && timeElapsed !== Infinity) {
                 console.log("synced")
                 syncedWithLastRound = true
                 timeElapsed = GAME_DURATION - timeLeft
@@ -673,21 +705,21 @@ function draw() {
 
     if (gamePhase === DESKTOP_PREVIEW_PHASE) {
         drawDesktop(vWidth, vHeight, aspect_size);
-        // drawLanguageToggle(vWidth, vHeight, aspect_size, true);
+        drawLanguageToggle(vWidth, vHeight, aspect_size, true);
 
-        const elapsed = performance.now() - desktopPreviewStartTime;
-        const fileIndex = Math.floor(elapsed / fileDuration);
-
-        for (let i = 0; i <= fileIndex && i < filesData.length; i++) {
-            filesData[i].clean = false;
-        }
-
-        const totalDuration = (filesData.length + 1) * 1000;
-
-        if (elapsed >= totalDuration) {
-            desktopPreviewStartTime = null;
-            startTraining();
-        }
+        // const elapsed = performance.now() - desktopPreviewStartTime;
+        // const fileIndex = Math.floor(elapsed / fileDuration);
+        //
+        // for (let i = 0; i <= fileIndex && i < filesData.length; i++) {
+        //     filesData[i].clean = false;
+        // }
+        //
+        // const totalDuration = (filesData.length + 1) * 1000;
+        //
+        // if (elapsed >= totalDuration) {
+        //     desktopPreviewStartTime = null;
+        //     startTraining();
+        // }
 
         if (blurred) ctx.restore();
         return;
@@ -714,14 +746,14 @@ function draw() {
         return;
     }
 
-    if (gamePhase === RETRY_PROMPT_PHASE && retryPromptScreensPerGame<1) {
+    if (gamePhase === RETRY_PROMPT_PHASE && retryPromptScreensPerGame < 1) {
         drawRetryPrompt(vWidth, vHeight, aspect_size)
         drawLanguageToggle(vWidth, vHeight, aspect_size)
         if (blurred) ctx.restore();
         return
     }
 
-    if(retryPromptScreensPerGame>=1 && gamePhase === RETRY_PROMPT_PHASE){
+    if (retryPromptScreensPerGame >= 1 && gamePhase === RETRY_PROMPT_PHASE) {
         gamePhase = FINAL_GAME_OVER_PHASE
         return
     }
@@ -793,6 +825,8 @@ function drawDesktop(vWidth, vHeight, aspect_size) {
     }
 
     drawFiles(ctx, filesData, canvas, aspect_size, vWidth, vHeight);
+
+    drawHackAlertPopup(vWidth, vHeight, aspect_size);
 
     ctx.restore();
 }
@@ -880,11 +914,57 @@ function drawFileIcon(file, x, y, size, aspect_size) {
         ctx.fillRect(x, y, size, size);
     }
 
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = "#050505";
-    ctx.font = `${12 / aspect_size}px sans-serif`;
-    ctx.textAlign = "center";
-    ctx.textBaseline = "top";
+    // CORRUPTION ANIMATION
+    if (!file.clean && file.corruptedAt !== null) {
+        const age = performance.now() - file.corruptedAt;
+        const duration = 600; // animation lasts 600ms
+
+        if (age < duration) {
+
+            const progress = age / duration; // 0 → 1
+
+            // Glitch slices — random horizontal strips displaced sideways
+            const sliceCount = 6;
+            for (let s = 0; s < sliceCount; s++) {
+                const sliceY = y + (size / sliceCount) * s;
+                const sliceH = size / sliceCount;
+                const offsetX = (Math.random() - 0.5) * size * 0.4 * (1 - progress);
+
+                ctx.save();
+                ctx.globalAlpha = (1 - progress) * 0.7;
+                ctx.drawImage(
+                    iconImg,
+                    0, (size / sliceCount) * s, size, sliceH, // source slice
+                    x + offsetX, sliceY, size, sliceH          // displaced destination
+                );
+                ctx.restore();
+            }
+
+            // Red flash overlay fading out
+            ctx.save();
+            ctx.globalAlpha = (1 - progress) * 0.5;
+            ctx.fillStyle = "#ff0033";
+            ctx.fillRect(x, y, size, size);
+            ctx.restore();
+
+            // Cyan scanline flicker
+            ctx.save();
+            ctx.globalAlpha = (1 - progress) * 0.3;
+            ctx.fillStyle = "#00f2ff";
+            for (let line = 0; line < size; line += 4) {
+                if (Math.random() > 0.5) {
+                    ctx.fillRect(x, y + line, size, 2);
+                }
+            }
+            ctx.restore();
+        }
+    }
+
+    // ctx.shadowBlur = 0;
+    // ctx.fillStyle = "#050505";
+    // ctx.font = `${12 / aspect_size}px sans-serif`;
+    // ctx.textAlign = "center";
+    // ctx.textBaseline = "top";
 
     // const textY = y + size + (6 / aspect_size);
 
@@ -898,6 +978,777 @@ function drawFileIcon(file, x, y, size, aspect_size) {
 
     ctx.restore();
 }
+
+function drawHackAlertPopup(vWidth, vHeight, aspect_size) {
+    if (desktopPreviewStartTime === null) return;
+
+    const elapsed = performance.now() - desktopPreviewStartTime;
+    const fadeStart = 400;
+    const fadeDuration = 300;
+
+    if (elapsed < fadeStart) return;
+
+    const alpha = Math.min(1, (elapsed - fadeStart) / fadeDuration);
+
+    const popupW = vWidth * 0.4;
+    const popupH = vHeight * 0.60;
+    const popupX = vWidth * 0.57;
+    const popupY = vHeight * 0.18;
+    const r = 6 / aspect_size; // corner radius
+
+    ctx.save();
+    ctx.globalAlpha = alpha;
+
+    // === Drop shadow ===
+    ctx.shadowColor = "rgba(0,0,0,0.45)";
+    ctx.shadowBlur = 16 / aspect_size;
+    ctx.shadowOffsetX = 3 / aspect_size;
+    ctx.shadowOffsetY = 3 / aspect_size;
+
+    // === Window body (XP Luna beige/cream) ===
+    ctx.fillStyle = "#ece9d8";
+    ctx.beginPath();
+    ctx.roundRect(popupX, popupY, popupW, popupH, [r, r, r, r]);
+    ctx.fill();
+
+    ctx.shadowBlur = 0;
+    ctx.shadowOffsetX = 0;
+    ctx.shadowOffsetY = 0;
+
+    // === Outer border (dark blue, XP window border) ===
+    ctx.strokeStyle = "#0a246a";
+    ctx.lineWidth = 1.5 / aspect_size;
+    ctx.beginPath();
+    ctx.roundRect(popupX, popupY, popupW, popupH, [r, r, r, r]);
+    ctx.stroke();
+
+    // === Title bar (XP blue gradient with top highlight) ===
+    const titleBarH = 28 / aspect_size;
+    const titleBarR = r; // rounded top corners only
+
+    // Clip to title bar region first
+    ctx.save();
+    ctx.beginPath();
+    ctx.roundRect(popupX, popupY, popupW, titleBarH, [titleBarR, titleBarR, 0, 0]);
+    ctx.clip();
+
+    // Base blue gradient
+    const baseGrad = ctx.createLinearGradient(popupX, popupY, popupX, popupY + titleBarH);
+    baseGrad.addColorStop(0, "#4a9cf7");
+    baseGrad.addColorStop(0.06, "#1f6ec8");
+    baseGrad.addColorStop(0.5, "#1255b0");
+    baseGrad.addColorStop(0.95, "#0d47a1");
+    baseGrad.addColorStop(1, "#0a3d8f");
+    ctx.fillStyle = baseGrad;
+    ctx.fillRect(popupX, popupY, popupW, titleBarH);
+
+    // Bright specular highlight strip near the top
+    const specGrad = ctx.createLinearGradient(popupX, popupY, popupX, popupY + titleBarH * 0.55);
+    specGrad.addColorStop(0, "rgba(255,255,255,0.55)");
+    specGrad.addColorStop(0.4, "rgba(255,255,255,0.15)");
+    specGrad.addColorStop(1, "rgba(255,255,255,0)");
+    ctx.fillStyle = specGrad;
+    ctx.fillRect(popupX, popupY, popupW, titleBarH * 0.55);
+
+    ctx.restore(); // end title clip
+
+    // === Title bar bottom separator line ===
+    ctx.strokeStyle = "#0a246a";
+    ctx.lineWidth = 1 / aspect_size;
+    ctx.beginPath();
+    ctx.moveTo(popupX, popupY + titleBarH);
+    ctx.lineTo(popupX + popupW, popupY + titleBarH);
+    ctx.stroke();
+
+    // === Window icon (small warning shield) ===
+    const iconOffsetX = popupX + (8 / aspect_size);
+    const iconOffsetY = popupY + titleBarH / 2;
+    ctx.font = `${Math.round(13 / aspect_size)}px "Arial", sans-serif`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.fillStyle = "#ffffff";
+    ctx.fillText("⚠", iconOffsetX, iconOffsetY);
+
+    // === Title bar text ===
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `bold ${Math.round(12 / aspect_size)}px "Tahoma", "Arial", sans-serif`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "middle";
+    ctx.shadowColor = "rgba(0,0,20,0.6)";
+    ctx.shadowBlur = 2 / aspect_size;
+    ctx.fillText("System Alert", popupX + (26 / aspect_size), popupY + titleBarH / 2);
+    ctx.shadowBlur = 0;
+
+    // === XP Title bar buttons (Close, Maximize, Minimize) ===
+    const btnSize = (titleBarH - 6 / aspect_size);
+    const btnY = popupY + (3 / aspect_size);
+    const btnSpacing = btnSize + (2 / aspect_size);
+
+    // Close button (red)
+    const closeBtnX = popupX + popupW - btnSize - (4 / aspect_size);
+    drawXPTitleButton(closeBtnX, btnY, btnSize, aspect_size, "#e81123", "#ff6b6b", "✕");
+
+    // Maximize button (gray)
+    const maxBtnX = closeBtnX - btnSpacing;
+    drawXPTitleButton(maxBtnX, btnY, btnSize, aspect_size, "#6a8fce", "#9ab5e8", "□");
+
+    // Minimize button (gray)
+    const minBtnX = maxBtnX - btnSpacing;
+    drawXPTitleButton(minBtnX, btnY, btnSize, aspect_size, "#6a8fce", "#9ab5e8", "─");
+
+    // === Content area ===
+    const contentX = popupX + (14 / aspect_size);
+    const contentY = popupY + titleBarH + (18 / aspect_size);
+    const contentW = popupW - (28 / aspect_size);
+
+    // === Big Warning icon (yellow triangle) ===
+    const warnSize = 40 / aspect_size;
+    const warnX = contentX + warnSize / 2;
+    const warnY = contentY + warnSize / 2;
+
+    // Shadow under triangle
+    ctx.shadowColor = "rgba(0,0,0,0.25)";
+    ctx.shadowBlur = 4 / aspect_size;
+
+    ctx.fillStyle = "#ffcc00";
+    ctx.strokeStyle = "#c8890a";
+    ctx.lineWidth = 1.5 / aspect_size;
+    ctx.beginPath();
+    ctx.moveTo(warnX, warnY - warnSize / 2);
+    ctx.lineTo(warnX + warnSize / 2, warnY + warnSize / 2);
+    ctx.lineTo(warnX - warnSize / 2, warnY + warnSize / 2);
+    ctx.closePath();
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.shadowBlur = 0;
+
+    ctx.fillStyle = "#1a0a00";
+    ctx.font = `bold ${Math.round(20 / aspect_size)}px "Arial", sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText("!", warnX, warnY + (3 / aspect_size));
+
+    // === Main message text ===
+    const msgX = contentX + warnSize + (12 / aspect_size);
+
+    const titleLines = (UI_TEXT.HACK_ALERT_TITLE?.[CURRENT_GAME_LANGUAGE] ?? "OH NO!\nWE'VE BEEN HACKED!").split("\n");
+
+    ctx.fillStyle = "#000000";
+    ctx.font = `bold ${Math.round(15 / aspect_size)}px "Tahoma", "Arial", sans-serif`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+
+    titleLines.forEach((line, i) => {
+        ctx.fillText(line, msgX, contentY + i * (16 / aspect_size));
+    });
+
+    // === Sub message ===
+    const subLines = (UI_TEXT.HACK_ALERT_BODY?.[CURRENT_GAME_LANGUAGE] ?? "All files are being encrypted.\nWe need an antivirus\nimmediately!").split("\n");
+
+    const subY = contentY + titleLines.length * (16 / aspect_size) + (10 / aspect_size);
+    ctx.fillStyle = "#222222";
+    ctx.font = `${Math.round(13 / aspect_size)}px "Tahoma", "Arial", sans-serif`;
+
+    subLines.forEach((line, i) => {
+        ctx.fillText(line, msgX, subY + i * (14 / aspect_size));
+    });
+
+    // === Horizontal divider (XP sunken style) ===
+    const divY = subY + subLines.length * (14 / aspect_size) + (14 / aspect_size);
+
+    ctx.strokeStyle = "#aca899";
+    ctx.lineWidth = 1 / aspect_size;
+    ctx.beginPath();
+    ctx.moveTo(popupX + (8 / aspect_size), divY);
+    ctx.lineTo(popupX + popupW - (8 / aspect_size), divY);
+    ctx.stroke();
+
+    ctx.strokeStyle = "#ffffff";
+    ctx.beginPath();
+    ctx.moveTo(popupX + (8 / aspect_size), divY + (1 / aspect_size));
+    ctx.lineTo(popupX + popupW - (8 / aspect_size), divY + (1 / aspect_size));
+    ctx.stroke();
+
+    // === Status lines ===
+    const statusY = divY + (10 / aspect_size);
+    const lineH = 15 / aspect_size;
+    const corruptedCount = filesData.filter(f => !f.clean).length;
+
+    const statusLines = [
+        {
+            label: UI_TEXT.HACK_ALERT_FILES_ENCRYPTED?.[CURRENT_GAME_LANGUAGE] ?? "Files encrypted:",
+            value: `${corruptedCount} / ${filesData.length}`,
+            valueColor: "#cc0000"
+        },
+        {
+            label: UI_TEXT.HACK_ALERT_ANTIVIRUS_STATUS?.[CURRENT_GAME_LANGUAGE] ?? "Antivirus status:",
+            value: UI_TEXT.HACK_ALERT_STATUS_OFFLINE?.[CURRENT_GAME_LANGUAGE] ?? "OFFLINE",
+            valueColor: "#cc0000"
+        },
+        {
+            label: UI_TEXT.HACK_ALERT_THREAT_LEVEL?.[CURRENT_GAME_LANGUAGE] ?? "Threat level:",
+            value: UI_TEXT.HACK_ALERT_STATUS_CRITICAL?.[CURRENT_GAME_LANGUAGE] ?? "CRITICAL",
+            valueColor: "#cc0000"
+        },
+    ];
+
+    ctx.font = `${Math.round(13 / aspect_size)}px "Courier New", monospace`;
+    ctx.textAlign = "left";
+    ctx.textBaseline = "top";
+
+    statusLines.forEach((s, i) => {
+        ctx.fillStyle = "#333333";
+        ctx.fillText(s.label, contentX, statusY + i * lineH);
+        const labelW = ctx.measureText(s.label + " ").width;
+        ctx.fillStyle = s.valueColor;
+        ctx.fillText(s.value, contentX + labelW, statusY + i * lineH);
+    });
+
+    // === XP-style OK button ===
+    // Replace the drawXPButton call at the bottom of drawHackAlertPopup:
+    const allCorrupted = filesData.every(f => !f.clean);
+    const btnW = 120 / aspect_size;
+    const btnH = 30 / aspect_size;
+    const okBtnX = popupX + popupW / 2 - btnW / 2;
+    const okBtnY = popupY + popupH - btnH - (12 / aspect_size);
+
+    // Store button area for click detection
+    hackAlertButtonArea = {x: okBtnX, y: okBtnY, w: btnW, h: btnH};
+
+    drawXPButton(okBtnX, okBtnY, btnW, btnH, aspect_size, elapsed,
+        UI_TEXT.HACK_ALERT_BUTTON?.[CURRENT_GAME_LANGUAGE] ?? "Train Antivirus",
+        allCorrupted);
+
+
+    ctx.restore();
+}
+
+// Helper: draws a single XP-style title bar button (close/min/max)
+function drawXPTitleButton(x, y, size, aspect_size, colorTop, colorBottom, label) {
+    const r = 3 / aspect_size;
+    ctx.save();
+
+    // Gradient fill
+    const g = ctx.createLinearGradient(x, y, x, y + size);
+    g.addColorStop(0, colorBottom);
+    g.addColorStop(1, colorTop);
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.roundRect(x, y, size, size, r);
+    ctx.fill();
+
+    // Highlight top edge
+    ctx.strokeStyle = "rgba(255,255,255,0.6)";
+    ctx.lineWidth = 1 / aspect_size;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y + 1 / aspect_size);
+    ctx.lineTo(x + size - r, y + 1 / aspect_size);
+    ctx.stroke();
+
+    // Dark bottom edge
+    ctx.strokeStyle = "rgba(0,0,0,0.4)";
+    ctx.beginPath();
+    ctx.roundRect(x, y, size, size, r);
+    ctx.stroke();
+
+    // Label
+    ctx.fillStyle = "#ffffff";
+    ctx.font = `bold ${Math.round(9 / aspect_size)}px "Tahoma", sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.shadowColor = "rgba(0,0,0,0.5)";
+    ctx.shadowBlur = 1 / aspect_size;
+    ctx.fillText(label, x + size / 2, y + size / 2);
+    ctx.shadowBlur = 0;
+
+    ctx.restore();
+}
+
+// Helper: draws the XP-style OK button
+function drawXPButton(x, y, w, h, aspect_size, elapsed, label, active = false) {
+    const r = 3 / aspect_size;
+    const blink = active && Math.floor(elapsed / 700) % 2 === 0;
+
+    if(hackAlertButtonArea){
+        const allCorrupted = filesData.every(f => !f.clean);
+        const hovering = mouseIsInside(
+            hackAlertButtonArea.x,
+            hackAlertButtonArea.y,
+            hackAlertButtonArea.w,
+            hackAlertButtonArea.h
+        );
+        canvas.style.cursor = (allCorrupted && hovering) ? "pointer" : "default";
+    }
+
+    ctx.save();
+
+    // Outer border — blue when active, gray when not
+    ctx.strokeStyle = active ? "#003c74" : "#a0a0a0";
+    ctx.lineWidth = active ? 2 / aspect_size : 1 / aspect_size;
+    ctx.beginPath();
+    ctx.roundRect(x, y, w, h, r);
+    ctx.stroke();
+
+    // Button gradient
+    const g = ctx.createLinearGradient(x, y, x, y + h);
+    if (!active) {
+        // Grayed out / disabled look
+        g.addColorStop(0, "#d8d4c8");
+        g.addColorStop(1, "#b8b4a8");
+    } else if (blink) {
+        g.addColorStop(0, "#cce4ff");
+        g.addColorStop(0.45, "#a8d0f8");
+        g.addColorStop(0.5, "#88bcf0");
+        g.addColorStop(1, "#60a0e0");
+    } else {
+        g.addColorStop(0, "#ffffff");
+        g.addColorStop(0.45, "#ece9d8");
+        g.addColorStop(0.5, "#ddd9c8");
+        g.addColorStop(1, "#c8c4b4");
+    }
+    ctx.fillStyle = g;
+    ctx.beginPath();
+    ctx.roundRect(x + 1 / aspect_size, y + 1 / aspect_size, w - 2 / aspect_size, h - 2 / aspect_size, r);
+    ctx.fill();
+
+    // Inner highlight (top edge)
+    ctx.strokeStyle = "rgba(255,255,255,0.9)";
+    ctx.lineWidth = 1 / aspect_size;
+    ctx.beginPath();
+    ctx.moveTo(x + r, y + 1 / aspect_size);
+    ctx.lineTo(x + w - r, y + 1 / aspect_size);
+    ctx.stroke();
+
+    // Dotted focus ring only when active
+    if (active) {
+        ctx.strokeStyle = "#000000";
+        ctx.lineWidth = 1 / aspect_size;
+        ctx.setLineDash([1.5 / aspect_size, 1.5 / aspect_size]);
+        ctx.strokeRect(x + 3 / aspect_size, y + 3 / aspect_size, w - 6 / aspect_size, h - 6 / aspect_size);
+        ctx.setLineDash([]);
+    }
+
+    // Label — gray when disabled
+    ctx.fillStyle = active ? "#000000" : "#888888";
+    ctx.font = `${Math.round(12 / aspect_size)}px "Tahoma", "Arial", sans-serif`;
+    ctx.textAlign = "center";
+    ctx.textBaseline = "middle";
+    ctx.fillText(label, x + w / 2, y + h / 2);
+
+    ctx.restore();
+}
+
+
+// function drawHackAlertPopup(vWidth, vHeight, aspect_size) {
+//     if (desktopPreviewStartTime === null) return;
+//
+//     const elapsed = performance.now() - desktopPreviewStartTime;
+//     const fadeStart = 400;
+//     const fadeDuration = 300;
+//
+//     if (elapsed < fadeStart) return;
+//
+//     const alpha = Math.min(1, (elapsed - fadeStart) / fadeDuration);
+//
+//     const popupW = vWidth * 0.38;
+//     const popupH = vHeight * 0.50;
+//     const popupX = vWidth * 0.57;
+//     const popupY = vHeight * 0.18;
+//
+//     ctx.save();
+//     ctx.globalAlpha = alpha;
+//
+//     // === Drop shadow ===
+//     ctx.shadowColor = "rgba(0,0,0,0.5)";
+//     ctx.shadowBlur = 12 / aspect_size;
+//     ctx.shadowOffsetX = 4 / aspect_size;
+//     ctx.shadowOffsetY = 4 / aspect_size;
+//
+//     // === Window body (light gray, Windows classic) ===
+//     ctx.fillStyle = "#d4d0c8";
+//     ctx.fillRect(popupX, popupY, popupW, popupH);
+//
+//     // === Window border (3D raised effect) ===
+//     ctx.shadowBlur = 0;
+//     ctx.shadowOffsetX = 0;
+//     ctx.shadowOffsetY = 0;
+//
+//     // Outer highlight (top-left)
+//     ctx.strokeStyle = "#ffffff";
+//     ctx.lineWidth = 2 / aspect_size;
+//     ctx.beginPath();
+//     ctx.moveTo(popupX, popupY + popupH);
+//     ctx.lineTo(popupX, popupY);
+//     ctx.lineTo(popupX + popupW, popupY);
+//     ctx.stroke();
+//
+//     // Outer shadow (bottom-right)
+//     ctx.strokeStyle = "#808080";
+//     ctx.lineWidth = 2 / aspect_size;
+//     ctx.beginPath();
+//     ctx.moveTo(popupX + popupW, popupY);
+//     ctx.lineTo(popupX + popupW, popupY + popupH);
+//     ctx.lineTo(popupX, popupY + popupH);
+//     ctx.stroke();
+//
+//     // Inner highlight (top-left, inset 2px)
+//     const inset = 2 / aspect_size;
+//     ctx.strokeStyle = "#dfdfdf";
+//     ctx.lineWidth = 1 / aspect_size;
+//     ctx.beginPath();
+//     ctx.moveTo(popupX + inset, popupY + popupH - inset);
+//     ctx.lineTo(popupX + inset, popupY + inset);
+//     ctx.lineTo(popupX + popupW - inset, popupY + inset);
+//     ctx.stroke();
+//
+//     // Inner shadow (bottom-right)
+//     ctx.strokeStyle = "#404040";
+//     ctx.lineWidth = 1 / aspect_size;
+//     ctx.beginPath();
+//     ctx.moveTo(popupX + popupW - inset, popupY + inset);
+//     ctx.lineTo(popupX + popupW - inset, popupY + popupH - inset);
+//     ctx.lineTo(popupX + inset, popupY + popupH - inset);
+//     ctx.stroke();
+//
+//     // === Title bar (Windows blue gradient) ===
+//     const titleBarH = 22 / aspect_size;
+//     const titleGrad = ctx.createLinearGradient(popupX, popupY, popupX + popupW, popupY);
+//     titleGrad.addColorStop(0, "#0a246a");
+//     titleGrad.addColorStop(0.5, "#3a6ea5");
+//     titleGrad.addColorStop(1, "#0a246a");
+//     ctx.fillStyle = titleGrad;
+//     ctx.fillRect(popupX + 2 / aspect_size, popupY + 2 / aspect_size, popupW - 4 / aspect_size, titleBarH);
+//
+//     // === Title bar text ===
+//     ctx.fillStyle = "#ffffff";
+//     ctx.font = `bold ${Math.round(10 / aspect_size)}px "Arial", sans-serif`;
+//     ctx.textAlign = "left";
+//     ctx.textBaseline = "middle";
+//     ctx.fillText(
+//         "⚠  System Alert",
+//         popupX + (8 / aspect_size),
+//         popupY + 2 / aspect_size + titleBarH / 2
+//     );
+//
+//     // === Close button (X) ===
+//     const closeBtnSize = titleBarH - (4 / aspect_size);
+//     const closeBtnX = popupX + popupW - closeBtnSize - (6 / aspect_size);
+//     const closeBtnY = popupY + (4 / aspect_size);
+//
+//     // Close button body
+//     ctx.fillStyle = "#d4d0c8";
+//     ctx.fillRect(closeBtnX, closeBtnY, closeBtnSize, closeBtnSize);
+//
+//     // Close button raised border
+//     ctx.strokeStyle = "#ffffff";
+//     ctx.lineWidth = 1 / aspect_size;
+//     ctx.beginPath();
+//     ctx.moveTo(closeBtnX, closeBtnY + closeBtnSize);
+//     ctx.lineTo(closeBtnX, closeBtnY);
+//     ctx.lineTo(closeBtnX + closeBtnSize, closeBtnY);
+//     ctx.stroke();
+//     ctx.strokeStyle = "#808080";
+//     ctx.beginPath();
+//     ctx.moveTo(closeBtnX + closeBtnSize, closeBtnY);
+//     ctx.lineTo(closeBtnX + closeBtnSize, closeBtnY + closeBtnSize);
+//     ctx.lineTo(closeBtnX, closeBtnY + closeBtnSize);
+//     ctx.stroke();
+//
+//     // X mark
+//     ctx.strokeStyle = "#000000";
+//     ctx.lineWidth = 1.5 / aspect_size;
+//     const xPad = 3 / aspect_size;
+//     ctx.beginPath();
+//     ctx.moveTo(closeBtnX + xPad, closeBtnY + xPad);
+//     ctx.lineTo(closeBtnX + closeBtnSize - xPad, closeBtnY + closeBtnSize - xPad);
+//     ctx.moveTo(closeBtnX + closeBtnSize - xPad, closeBtnY + xPad);
+//     ctx.lineTo(closeBtnX + xPad, closeBtnY + closeBtnSize - xPad);
+//     ctx.stroke();
+//
+//     // === Content area ===
+//     const contentX = popupX + (12 / aspect_size);
+//     const contentY = popupY + titleBarH + (16 / aspect_size);
+//     const contentW = popupW - (24 / aspect_size);
+//
+//     // === Warning icon (classic Windows yellow shield/exclamation) ===
+//     const iconSize = 36 / aspect_size;
+//     const iconX = contentX + iconSize / 2;
+//     const iconY = contentY + iconSize / 2;
+//
+//     // Yellow triangle
+//     ctx.fillStyle = "#ffcc00";
+//     ctx.strokeStyle = "#000000";
+//     ctx.lineWidth = 1.5 / aspect_size;
+//     ctx.beginPath();
+//     ctx.moveTo(iconX, iconY - iconSize / 2);
+//     ctx.lineTo(iconX + iconSize / 2, iconY + iconSize / 2);
+//     ctx.lineTo(iconX - iconSize / 2, iconY + iconSize / 2);
+//     ctx.closePath();
+//     ctx.fill();
+//     ctx.stroke();
+//
+//     // Exclamation mark
+//     ctx.fillStyle = "#000000";
+//     ctx.font = `bold ${Math.round(18 / aspect_size)}px "Arial", sans-serif`;
+//     ctx.textAlign = "center";
+//     ctx.textBaseline = "middle";
+//     ctx.fillText("!", iconX, iconY + (3 / aspect_size));
+//
+//     // === Main message text ===
+//     const msgX = contentX + iconSize + (10 / aspect_size);
+//     const msgW = contentW - iconSize - (10 / aspect_size);
+//
+//     const titleLines = (UI_TEXT.HACK_ALERT_TITLE?.[CURRENT_GAME_LANGUAGE] ?? "OH NO!\nWE'VE BEEN HACKED!").split("\n");
+//
+//     ctx.fillStyle = "#000000";
+//     ctx.font = `bold ${Math.round(11 / aspect_size)}px "Arial", sans-serif`;
+//     ctx.textAlign = "left";
+//     ctx.textBaseline = "top";
+//
+//     titleLines.forEach((line, i) => {
+//         ctx.fillText(line, msgX, contentY + i * (14 / aspect_size));
+//     });
+//
+//     // === Sub message ===
+//     const subLines = (UI_TEXT.HACK_ALERT_BODY?.[CURRENT_GAME_LANGUAGE] ?? "All files are being encrypted.\nWe need an antivirus\nimmediately!").split("\n");
+//
+//     const subY = contentY + titleLines.length * (14 / aspect_size) + (10 / aspect_size);
+//     ctx.fillStyle = "#000000";
+//     ctx.font = `${Math.round(10 / aspect_size)}px "Arial", sans-serif`;
+//
+//     subLines.forEach((line, i) => {
+//         ctx.fillText(line, msgX, subY + i * (13 / aspect_size));
+//     });
+//
+//     // === Horizontal divider ===
+//     const divY = subY + subLines.length * (13 / aspect_size) + (14 / aspect_size);
+//     ctx.strokeStyle = "#808080";
+//     ctx.lineWidth = 1 / aspect_size;
+//     ctx.beginPath();
+//     ctx.moveTo(popupX + (6 / aspect_size), divY);
+//     ctx.lineTo(popupX + popupW - (6 / aspect_size), divY);
+//     ctx.stroke();
+//
+//     ctx.strokeStyle = "#ffffff";
+//     ctx.beginPath();
+//     ctx.moveTo(popupX + (6 / aspect_size), divY + (1 / aspect_size));
+//     ctx.lineTo(popupX + popupW - (6 / aspect_size), divY + (1 / aspect_size));
+//     ctx.stroke();
+//
+//     // === Status info (monospace terminal style) ===
+//     const statusY = divY + (12 / aspect_size);
+//     const lineH = 14 / aspect_size;
+//     const corruptedCount = filesData.filter(f => !f.clean).length;
+//
+//     const statusLines = [
+//         `Files encrypted: ${corruptedCount} / ${filesData.length}`,
+//         `Antivirus status: OFFLINE`,
+//         `Threat level: CRITICAL`,
+//     ];
+//
+//     ctx.font = `${Math.round(9 / aspect_size)}px "Courier New", monospace`;
+//     ctx.fillStyle = "#000080";
+//     ctx.textAlign = "left";
+//     ctx.textBaseline = "top";
+//
+//     statusLines.forEach((line, i) => {
+//         ctx.fillText(line, contentX, statusY + i * lineH);
+//     });
+//
+//     // === OK Button (Windows classic) ===
+//     const blink = Math.floor(elapsed / 600) % 2 === 0;
+//     const btnW = 80 / aspect_size;
+//     const btnH = 24 / aspect_size;
+//     const btnX = popupX + (popupW / 2) - (btnW / 2);
+//     const btnY = popupY + popupH - btnH - (14 / aspect_size);
+//
+//     // Button body
+//     ctx.fillStyle = blink ? "#ece9d8" : "#d4d0c8";
+//     ctx.fillRect(btnX, btnY, btnW, btnH);
+//
+//     // Raised border
+//     ctx.strokeStyle = "#ffffff";
+//     ctx.lineWidth = 2 / aspect_size;
+//     ctx.beginPath();
+//     ctx.moveTo(btnX, btnY + btnH);
+//     ctx.lineTo(btnX, btnY);
+//     ctx.lineTo(btnX + btnW, btnY);
+//     ctx.stroke();
+//
+//     ctx.strokeStyle = "#808080";
+//     ctx.beginPath();
+//     ctx.moveTo(btnX + btnW, btnY);
+//     ctx.lineTo(btnX + btnW, btnY + btnH);
+//     ctx.lineTo(btnX, btnY + btnH);
+//     ctx.stroke();
+//
+//     // Dotted focus border inside button
+//     ctx.strokeStyle = "#000000";
+//     ctx.lineWidth = 1 / aspect_size;
+//     ctx.setLineDash([2 / aspect_size, 2 / aspect_size]);
+//     ctx.strokeRect(btnX + (3 / aspect_size), btnY + (3 / aspect_size), btnW - (6 / aspect_size), btnH - (6 / aspect_size));
+//     ctx.setLineDash([]);
+//
+//     // Button label
+//     ctx.fillStyle = "#000000";
+//     ctx.font = `${Math.round(10 / aspect_size)}px "Arial", sans-serif`;
+//     ctx.textAlign = "center";
+//     ctx.textBaseline = "middle";
+//     ctx.fillText("OK", btnX + btnW / 2, btnY + btnH / 2);
+//
+//     ctx.restore();
+// }
+
+// function drawHackAlertPopup(vWidth, vHeight, aspect_size) {
+//     if (desktopPreviewStartTime === null) return;
+//
+//     const elapsed = performance.now() - desktopPreviewStartTime;
+//     const fadeStart = 400;  // starts fading in just before first corruption
+//     const fadeDuration = 400;
+//
+//     if (elapsed < fadeStart) return;
+//
+//     const alpha = Math.min(1, (elapsed - fadeStart) / fadeDuration);
+//
+//     const popupW = vWidth * 0.38;
+//     const popupH = vHeight * 0.52;
+//     const popupX = vWidth * 0.58;
+//     const popupY = vHeight * 0.18;
+//
+//     ctx.save();
+//     ctx.globalAlpha = alpha;
+//
+//     // Flicker effect — subtle, based on time
+//     const flicker = 0.85 + 0.15 * Math.sin(elapsed * 0.03);
+//     ctx.globalAlpha = alpha * flicker;
+//
+//     // Drop shadow / glow behind popup
+//     ctx.shadowBlur = 30 / aspect_size;
+//     ctx.shadowColor = "#ff0033";
+//
+//     // Background panel
+//     ctx.fillStyle = "rgba(10, 5, 15, 0.92)";
+//     ctx.strokeStyle = "#ff0033";
+//     ctx.lineWidth = 2 / aspect_size;
+//     ctx.beginPath();
+//     ctx.roundRect(popupX, popupY, popupW, popupH, 6 / aspect_size);
+//     ctx.fill();
+//     ctx.stroke();
+//
+//     ctx.shadowBlur = 0;
+//
+//     // Red header bar
+//     ctx.fillStyle = "#ff0033";
+//     ctx.beginPath();
+//     ctx.roundRect(popupX, popupY, popupW, 32 / aspect_size, [6 / aspect_size, 6 / aspect_size, 0, 0]);
+//     ctx.fill();
+//
+//     // Header title
+//     ctx.fillStyle = "#ffffff";
+//     ctx.font = `bold ${Math.round(11 / aspect_size)}px "Courier New", monospace`;
+//     ctx.textAlign = "left";
+//     ctx.textBaseline = "middle";
+//     ctx.fillText("⚠ SECURITY_BREACH_DETECTED", popupX + (10 / aspect_size), popupY + (16 / aspect_size));
+//
+//     // Blinking red dot in header
+//     const blink = Math.floor(elapsed / 500) % 2 === 0;
+//     ctx.fillStyle = blink ? "#ffffff" : "#ff0033";
+//     ctx.beginPath();
+//     ctx.arc(popupX + popupW - (14 / aspect_size), popupY + (16 / aspect_size), 5 / aspect_size, 0, Math.PI * 2);
+//     ctx.fill();
+//
+//     // Body content
+//     const bodyX = popupX + (14 / aspect_size);
+//     const bodyStartY = popupY + (50 / aspect_size);
+//     const lineH = 20 / aspect_size;
+//
+//     // Alert icon area
+//     ctx.textAlign = "center";
+//     ctx.font = `${Math.round(36 / aspect_size)}px monospace`;
+//     ctx.fillStyle = "#ff0033";
+//     ctx.shadowBlur = 10 / aspect_size;
+//     ctx.shadowColor = "#ff0033";
+//     ctx.fillText("☣", popupX + popupW / 2, bodyStartY + (10 / aspect_size));
+//     ctx.shadowBlur = 0;
+//
+//     // Main message lines
+//     const mainMsgY = bodyStartY + (50 / aspect_size);
+//     ctx.font = `bold ${Math.round(13 / aspect_size)}px "Courier New", monospace`;
+//     ctx.fillStyle = "#ff4444";
+//     ctx.textAlign = "center";
+//     ctx.textBaseline = "top";
+//
+//     const alertLines = UI_TEXT.HACK_ALERT_TITLE?.[CURRENT_GAME_LANGUAGE]
+//         ? UI_TEXT.HACK_ALERT_TITLE[CURRENT_GAME_LANGUAGE].split("\n")
+//         : ["OH NO!", "WE'VE BEEN HACKED!"];
+//
+//     alertLines.forEach((line, i) => {
+//         ctx.fillText(line, popupX + popupW / 2, mainMsgY + i * lineH);
+//     });
+//
+//     // Sub-message
+//     const subMsgY = mainMsgY + alertLines.length * lineH + (12 / aspect_size);
+//     ctx.font = `${Math.round(10 / aspect_size)}px "Courier New", monospace`;
+//     ctx.fillStyle = "#cbd5e1";
+//
+//     const subLines = UI_TEXT.HACK_ALERT_BODY?.[CURRENT_GAME_LANGUAGE]
+//         ? UI_TEXT.HACK_ALERT_BODY[CURRENT_GAME_LANGUAGE].split("\n")
+//         : ["All files are being encrypted.", "We need an antivirus", "immediately!"];
+//
+//     subLines.forEach((line, i) => {
+//         ctx.fillText(line, popupX + popupW / 2, subMsgY + i * lineH);
+//     });
+//
+//     // Divider
+//     const dividerY = subMsgY + subLines.length * lineH + (14 / aspect_size);
+//     ctx.strokeStyle = "rgba(255, 0, 51, 0.4)";
+//     ctx.lineWidth = 1 / aspect_size;
+//     ctx.beginPath();
+//     ctx.moveTo(popupX + (10 / aspect_size), dividerY);
+//     ctx.lineTo(popupX + popupW - (10 / aspect_size), dividerY);
+//     ctx.stroke();
+//
+//     // Status lines (terminal-style)
+//     const statusY = dividerY + (12 / aspect_size);
+//     ctx.font = `${Math.round(9 / aspect_size)}px "Courier New", monospace`;
+//     ctx.textAlign = "left";
+//
+//     const corruptedCount = filesData.filter(f => !f.clean).length;
+//     const statusLines = [
+//         { label: "FILES_ENCRYPTED:", value: `${corruptedCount}/${filesData.length}`, color: "#ff4444" },
+//         { label: "ANTIVIRUS_STATUS:", value: "OFFLINE", color: "#ff4444" },
+//         { label: "THREAT_LEVEL:", value: "CRITICAL", color: "#ff0033" },
+//     ];
+//
+//     statusLines.forEach((s, i) => {
+//         ctx.fillStyle = "#64748b";
+//         ctx.fillText(s.label, bodyX, statusY + i * lineH);
+//         ctx.fillStyle = s.color;
+//         const labelW = ctx.measureText(s.label + " ").width;
+//         ctx.fillText(s.value, bodyX + labelW, statusY + i * lineH);
+//     });
+//
+//     // Pulsing bottom CTA
+//     const ctaY = popupY + popupH - (36 / aspect_size);
+//     const pulse = 0.6 + 0.4 * Math.abs(Math.sin(elapsed * 0.004));
+//     ctx.globalAlpha = alpha * flicker * pulse;
+//     ctx.fillStyle = "#ff0033";
+//     ctx.strokeStyle = "#ff0033";
+//     ctx.lineWidth = 1.5 / aspect_size;
+//     ctx.beginPath();
+//     ctx.roundRect(popupX + (10 / aspect_size), ctaY, popupW - (20 / aspect_size), 24 / aspect_size, 3 / aspect_size);
+//     ctx.fill();
+//
+//     ctx.fillStyle = "#ffffff";
+//     ctx.font = `bold ${Math.round(10 / aspect_size)}px "Courier New", monospace`;
+//     ctx.textAlign = "center";
+//     ctx.textBaseline = "middle";
+//     ctx.fillText("INITIATING ANTIVIRUS TRAINING...", popupX + popupW / 2, ctaY + (12 / aspect_size));
+//
+//     ctx.restore();
+// }
+
 
 // function drawWrappedText(text, x, y, maxWidth, lineHeight) {
 //     const words = text.split(" ");
@@ -1006,8 +1857,8 @@ function drawRetryPrompt(vWidth, vHeight, aspect_size) {
 
 
     ctx.save();
-    ctx.shadowBlur = 15;
-    ctx.shadowColor = "#facc15";
+    // ctx.shadowBlur = 15;
+    // ctx.shadowColor = "#facc15";
     ctx.fillStyle = "#facc15";
     ctx.font = `bold ${vWidth * 0.06}px monospace`; // Monospace font
     ctx.fillText(UI_TEXT.RETRY_SCREEN_HEADER_TEXT[CURRENT_GAME_LANGUAGE], vWidth / 2, vHeight * 0.3);
@@ -1136,8 +1987,8 @@ function drawGameOver(vWidth, vHeight, aspect_size) {
     // console.log(points)
 
     // Game Over Header
-    ctx.shadowBlur = 15 / aspect_size;
-    ctx.shadowColor = "#ff0055"; // Hot pink neon glow
+    // ctx.shadowBlur = 15 / aspect_size;
+    // ctx.shadowColor = "#ff0055"; // Hot pink neon glow
     ctx.fillStyle = "#ff0055";
     ctx.fillText(UI_TEXT.GAME_OVER_HEADER_TEXT[CURRENT_GAME_LANGUAGE], vWidth / 2, vHeight / 2 - (20 / aspect_size));
 
@@ -1234,8 +2085,8 @@ function drawMinigameIntroScreen(vWidth, vHeight, aspect_size) {
     // Header
     ctx.save();
     ctx.fillStyle = "#00f2ff";
-    ctx.shadowBlur = 14 / aspect_size;
-    ctx.shadowColor = "#00f2ff";
+    // ctx.shadowBlur = 14 / aspect_size;
+    // ctx.shadowColor = "#00f2ff";
     ctx.font = `bold ${Math.round(28 / aspect_size)}px monospace`;
     ctx.fillText(title, vWidth / 2, vHeight * 0.30);
     ctx.restore();
@@ -1280,8 +2131,8 @@ function drawInstructions(vWidth, vHeight, aspect_size) {
     ctx.textBaseline = "middle";
     ctx.font = `bold ${scaleFont}px "Courier New", Courier, monospace`;
 
-    ctx.shadowBlur = 8 / aspect_size;
-    ctx.shadowColor = "#00f2ff";
+    // ctx.shadowBlur = 8 / aspect_size;
+    // ctx.shadowColor = "#00f2ff";
     ctx.fillStyle = "#00f2ff";
 
     //ctx.fillText("> SELECT_SAFER_PROTOCOL", vWidth / 2, yPos);
@@ -1370,11 +2221,11 @@ function drawUnsafeIntegrity(vWidth, aspect_size) {
 
         if (intact) {
             ctx.fillStyle = "rgba(0, 242, 255, 0.6)";
-            ctx.shadowBlur = 6 / aspect_size;
+            ctx.shadowBlur = 5 / aspect_size;
             ctx.shadowColor = "#00f2ff";
         } else {
             ctx.fillStyle = "rgba(251, 0, 0, 0.6)";
-            ctx.shadowBlur = 6 / aspect_size;
+            ctx.shadowBlur = 5 / aspect_size;
             ctx.shadowColor = "#fb0000";
         }
 
@@ -1767,7 +2618,7 @@ function drawPasswords(vWidth, vHeight, aspect_size) {
         let totalTextWidth = ctx.measureText(pw.text).width;
         let startX = pw.x + (pw.width / 2) - (totalTextWidth / 2);
 
-        ctx.shadowBlur = 8 / aspect_size;
+        // ctx.shadowBlur = 8 / aspect_size;
         for (let char of pw.text) {
             // const isSpecial = SYMBOLS.includes(char) || (char >= '0' && char <= '9');
             // ctx.fillStyle = isSpecial ? "#22c55e" : "#f8fafc";
@@ -2031,8 +2882,8 @@ function drawIntroScreen(vWidth, vHeight, aspect_size) {
 
     // Title
     ctx.fillStyle = "#00f2ff";
-    ctx.shadowBlur = 12 / aspect_size;
-    ctx.shadowColor = "#00f2ff";
+    // ctx.shadowBlur = 12 / aspect_size;
+    // ctx.shadowColor = "#00f2ff";
     ctx.font = `bold ${Math.round(32 / aspect_size)}px monospace`;
     ctx.fillText(UI_TEXT.INTRO_PHASE_HEADER_TEXT[CURRENT_GAME_LANGUAGE], vWidth / 2, vHeight * 0.25);
 
@@ -2405,6 +3256,28 @@ canvas.addEventListener("click", (e) => {
             gamePhase = DESKTOP_PREVIEW_PHASE;
             desktopPreviewStartTime = performance.now();
             return
+        }
+    }
+
+    // Hack alert popup button
+    if (gamePhase === DESKTOP_PREVIEW_PHASE && hackAlertButtonArea) {
+        const allCorrupted = filesData.every(f => !f.clean);
+        // console.log(allCorrupted)
+        const clickedInside = mouseIsInside(hackAlertButtonArea.x, hackAlertButtonArea.y,
+            hackAlertButtonArea.w, hackAlertButtonArea.h);
+
+        if (allCorrupted && clickedInside) {
+            // console.log("Click")
+
+            desktopPreviewStartTime = null;
+            hackAlertButtonArea = null;
+            filesData.forEach(f => {
+                f.clean = true;
+                f.corruptedAt = null;
+            });
+            canvas.style.cursor = "default";
+            startTraining();
+            return;
         }
     }
 

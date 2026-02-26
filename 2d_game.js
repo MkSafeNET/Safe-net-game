@@ -127,6 +127,11 @@ export function Game2D(endGameFunc) {
         next_level(game) {
             passed_count += 1;
 
+            // Push the completed level name now (not when fetching)
+            if (game.current_map._levelName) {
+                passedLevels.push(game.current_map._levelName);
+            }
+
             const total = getTotalLevelsCount();
 
             // if that was the final level, go straight to GAME_CLEAR
@@ -203,12 +208,16 @@ export function Game2D(endGameFunc) {
         // console.log(passedLevels)
         let {name, level} = getRandomLevel(passedLevels)
 
+        console.log(name)
+
         if (name === "finished") return false
 
-        passedLevels.push(name)
+        // passedLevels.push(name)
+
+        console.log(passedLevels)
 
         return {
-
+            _levelName: name,
             tile_size: 16,
 
             /*
@@ -780,7 +789,7 @@ export function Game2D(endGameFunc) {
         context.fill();
     };
 
-    Clarity.prototype.draw_statuses = function (ctx,vW,vH) {
+    Clarity.prototype.draw_statuses = function (ctx, vW, vH) {
 
         // Only show HUD during gameplay (you can remove this check if you want it everywhere)
         if (uiPhase !== UI_PHASE.PLAYING) return;
@@ -800,7 +809,7 @@ export function Game2D(endGameFunc) {
         ctx.save();
 
         // subtle backing plate so it’s readable on any background
-        const plateW = (barW + gap) * MAX_LIVES + (pad * 0.5) ;
+        const plateW = (barW + gap) * MAX_LIVES + (pad * 0.5);
         const plateH = barH + pad;
         ctx.fillStyle = "rgba(2, 6, 23, 0.45)";
         ctx.strokeStyle = "rgba(0, 242, 255, 0.25)";
@@ -912,7 +921,7 @@ export function Game2D(endGameFunc) {
         const vW = this.viewport.x;
         const vH = this.viewport.y;
 
-        if(MAX_LIVES>1) this.draw_statuses(context,vW,vH)
+        if (MAX_LIVES > 1) this.draw_statuses(context, vW, vH)
 
         uiButtons.primary = null;
 
@@ -1158,7 +1167,7 @@ export function Game2D(endGameFunc) {
 
             if (hoveredFileId === file.id && !file.completed) {
 
-                console.log(hoveredFileId)
+                // console.log(hoveredFileId)
                 ctx.shadowBlur = 20;
                 ctx.shadowColor = "#00f2ff";
                 ctx.strokeStyle = "#00f2ff";
@@ -1300,6 +1309,8 @@ export function Game2D(endGameFunc) {
         miniRafId = requestAnimationFrame(Loop);
     }
 
+    let pendingMap = null;
+
     const StartMiniGame = function () {
         if (file_scan_flag) {
             uiPhase = UI_PHASE.FILE_SCAN;
@@ -1307,12 +1318,13 @@ export function Game2D(endGameFunc) {
         }
         centeredCamera = false;
 
-        console.log(passed_count, " - ccc")
+        // console.log(passed_count, " - ccc")
 
         loopGen++;      // invalidates any currently-running Loop()
         stopMiniLoop(); // cancels any scheduled future frame
 
-        const newMap = getFreshMap();
+        const newMap = pendingMap || getFreshMap();
+        pendingMap = null;
         if (!newMap) {
             ACTIONS.finishGame(game)
             game.running = true;
@@ -1470,6 +1482,7 @@ export function Game2D(endGameFunc) {
                     mouse.y <= file.y + file.height / 2
                 ) {
                     current_file = file.id;
+                    pendingMap = getFreshMap();
                     uiPhase = UI_PHASE.PLAYING;
                     StartMiniGame();
                 }
