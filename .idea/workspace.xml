@@ -1,0 +1,256 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="AutoImportSettings">
+    <option name="autoReloadType" value="SELECTIVE" />
+  </component>
+  <component name="ChangeListManager">
+    <list default="true" id="c686132c-20e6-4b7c-be01-13a38567ba7b" name="Changes" comment="minor bug fixes">
+      <change beforePath="$PROJECT_DIR$/.idea/.gitignore" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/Safe-net-game.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/copilot.data.migration.ask2agent.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/dictionaries/project.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/game.js" beforeDir="false" afterPath="$PROJECT_DIR$/game.js" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/style.css" beforeDir="false" afterPath="$PROJECT_DIR$/style.css" afterDir="false" />
+    </list>
+    <option name="SHOW_DIALOG" value="false" />
+    <option name="HIGHLIGHT_CONFLICTS" value="true" />
+    <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
+    <option name="LAST_RESOLUTION" value="IGNORE" />
+  </component>
+  <component name="CopilotPersistence">
+    <persistenceIdMap>
+      <entry key="_C:/Users/Ljupc/Documents/CODES/WebstormProjects/Safe-net-game" value="38DSIdteroQAF46EN0dXDRy3CsU" />
+    </persistenceIdMap>
+  </component>
+  <component name="CopilotUserSelectedModel">
+    <selectedModels>
+      <entry key="chat-panel" value="Claude Sonnet 4.6" />
+      <entry key="agent-panel" value="Claude Sonnet 4.6" />
+    </selectedModels>
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="JavaScript File" />
+        <option value="HTML File" />
+      </list>
+    </option>
+  </component>
+  <component name="Git.Settings">
+    <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
+  </component>
+  <component name="GitHubPullRequestSearchHistory">{
+  &quot;lastFilter&quot;: {
+    &quot;state&quot;: &quot;OPEN&quot;,
+    &quot;assignee&quot;: &quot;Ljupce003&quot;
+  }
+}</component>
+  <component name="GithubPullRequestsUISettings">{
+  &quot;selectedUrlAndAccountId&quot;: {
+    &quot;url&quot;: &quot;https://github.com/bjovanceva/Safe-net-game.git&quot;,
+    &quot;accountId&quot;: &quot;18205fdb-6e09-4186-a727-b6296f4aefbe&quot;
+  }
+}</component>
+  <component name="KubernetesApiPersistence">{}</component>
+  <component name="KubernetesApiProvider">{
+  &quot;isMigrated&quot;: true
+}</component>
+  <component name="ProjectColorInfo">{
+  &quot;associatedIndex&quot;: 2
+}</component>
+  <component name="ProjectId" id="38DSIdteroQAF46EN0dXDRy3CsU" />
+  <component name="ProjectViewState">
+    <option name="hideEmptyMiddlePackages" value="true" />
+    <option name="showLibraryContents" value="true" />
+  </component>
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;DefaultHtmlFileTemplate&quot;: &quot;HTML File&quot;,
+    &quot;JavaScript Debug.index.html.executor&quot;: &quot;Run&quot;,
+    &quot;ModuleVcsDetector.initialDetectionPerformed&quot;: &quot;true&quot;,
+    &quot;Node.js.game.js.executor&quot;: &quot;Run&quot;,
+    &quot;Node.js.minigame_levels.js.executor&quot;: &quot;Run&quot;,
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.typescript.service.memoryLimit.init&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
+    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
+    &quot;javascript.preferred.runtime.type.id&quot;: &quot;node&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/Users/Ljupc/Documents/CODES/WebstormProjects/Safe-net-game/images&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.completion&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
+  }
+}</component>
+  <component name="RecentsManager">
+    <key name="CopyFile.RECENT_KEYS">
+      <recent name="C:\Users\Ljupc\Documents\CODES\WebstormProjects\Safe-net-game\images" />
+    </key>
+    <key name="MoveFile.RECENT_KEYS">
+      <recent name="C:\Users\Ljupc\Documents\CODES\WebstormProjects\Safe-net-game\images\file_images" />
+      <recent name="C:\Users\Ljupc\Documents\CODES\WebstormProjects\Safe-net-game\data" />
+      <recent name="C:\Users\Ljupc\Documents\CODES\WebstormProjects\Safe-net-game\images" />
+      <recent name="C:\Users\Ljupc\Documents\CODES\WebstormProjects\Safe-net-game\scripts" />
+    </key>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-js-predefined-d6986cc7102b-9b0f141eb926-JavaScript-WS-253.31033.133" />
+      </set>
+    </attachedChunks>
+  </component>
+  <component name="TaskManager">
+    <task active="true" id="Default" summary="Default task">
+      <changelist id="c686132c-20e6-4b7c-be01-13a38567ba7b" name="Changes" comment="" />
+      <created>1768332570104</created>
+      <option name="number" value="Default" />
+      <option name="presentableId" value="Default" />
+      <updated>1768332570104</updated>
+      <workItem from="1768332571410" duration="2461000" />
+      <workItem from="1768397626384" duration="102000" />
+      <workItem from="1768426593754" duration="21819000" />
+      <workItem from="1768499766683" duration="2842000" />
+      <workItem from="1768504306895" duration="1092000" />
+      <workItem from="1768527988504" duration="925000" />
+      <workItem from="1768585596521" duration="17275000" />
+      <workItem from="1768659958449" duration="12866000" />
+      <workItem from="1768767506564" duration="18189000" />
+      <workItem from="1768863146275" duration="5000" />
+      <workItem from="1769118674472" duration="13618000" />
+      <workItem from="1769163722370" duration="2894000" />
+      <workItem from="1769168460933" duration="327000" />
+      <workItem from="1769260137478" duration="1820000" />
+      <workItem from="1769353073422" duration="46000" />
+      <workItem from="1769353144703" duration="15975000" />
+      <workItem from="1769458545788" duration="2049000" />
+      <workItem from="1769677125973" duration="634000" />
+      <workItem from="1769953991726" duration="11126000" />
+      <workItem from="1770056252389" duration="6289000" />
+      <workItem from="1770107192409" duration="14754000" />
+      <workItem from="1770231783770" duration="3569000" />
+      <workItem from="1770239708069" duration="693000" />
+      <workItem from="1770242593680" duration="2000" />
+      <workItem from="1770244307297" duration="2545000" />
+      <workItem from="1770287935416" duration="128000" />
+      <workItem from="1770289069047" duration="1203000" />
+      <workItem from="1770580419814" duration="9171000" />
+      <workItem from="1770646856968" duration="1557000" />
+      <workItem from="1770660354617" duration="2498000" />
+      <workItem from="1770662903753" duration="503000" />
+      <workItem from="1770671478682" duration="7516000" />
+      <workItem from="1771638627316" duration="58000" />
+      <workItem from="1771638751714" duration="1185000" />
+      <workItem from="1771640235953" duration="1791000" />
+      <workItem from="1771973114563" duration="676000" />
+      <workItem from="1772037900316" duration="13000" />
+      <workItem from="1772115952014" duration="222000" />
+      <workItem from="1772116194952" duration="10590000" />
+      <workItem from="1772145550753" duration="1291000" />
+    </task>
+    <task id="LOCAL-00001" summary="minigame fix for bad camera position for minigame">
+      <option name="closed" value="true" />
+      <created>1768782602355</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1768782602355</updated>
+    </task>
+    <task id="LOCAL-00002" summary="added controls for touchscreens for minigame">
+      <option name="closed" value="true" />
+      <created>1768785211145</created>
+      <option name="number" value="00002" />
+      <option name="presentableId" value="LOCAL-00002" />
+      <option name="project" value="LOCAL" />
+      <updated>1768785211145</updated>
+    </task>
+    <task id="LOCAL-00003" summary="fix for minigame restart">
+      <option name="closed" value="true" />
+      <created>1768785779931</created>
+      <option name="number" value="00003" />
+      <option name="presentableId" value="LOCAL-00003" />
+      <option name="project" value="LOCAL" />
+      <updated>1768785779931</updated>
+    </task>
+    <task id="LOCAL-00004" summary="fixed some bugs and states">
+      <option name="closed" value="true" />
+      <created>1769132552856</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1769132552856</updated>
+    </task>
+    <task id="LOCAL-00005" summary="fixed some bugs and states">
+      <option name="closed" value="true" />
+      <created>1770247144537</created>
+      <option name="number" value="00005" />
+      <option name="presentableId" value="LOCAL-00005" />
+      <option name="project" value="LOCAL" />
+      <updated>1770247144539</updated>
+    </task>
+    <task id="LOCAL-00006" summary="minor bug fixes">
+      <option name="closed" value="true" />
+      <created>1770663121216</created>
+      <option name="number" value="00006" />
+      <option name="presentableId" value="LOCAL-00006" />
+      <option name="project" value="LOCAL" />
+      <updated>1770663121216</updated>
+    </task>
+    <option name="localTasksCounter" value="7" />
+    <servers />
+  </component>
+  <component name="TypeScriptGeneratedFilesManager">
+    <option name="version" value="3" />
+  </component>
+  <component name="Vcs.Log.Tabs.Properties">
+    <option name="TAB_STATES">
+      <map>
+        <entry key="MAIN">
+          <value>
+            <State />
+          </value>
+        </entry>
+      </map>
+    </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="minigame fix for bad camera position for minigame" />
+    <MESSAGE value="reverted back the Game Duration" />
+    <MESSAGE value="fix for minigame restart" />
+    <MESSAGE value="added controls for touchscreens for minigame" />
+    <MESSAGE value="fixed some bugs and states" />
+    <MESSAGE value="minor bug fixes" />
+    <option name="LAST_COMMIT_MESSAGE" value="minor bug fixes" />
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="javascript">
+          <url>file://$PROJECT_DIR$/level_editor.html</url>
+          <line>54</line>
+          <option name="timeStamp" value="2" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
+  </component>
+  <component name="XSLT-Support.FileAssociations.UIState">
+    <expand />
+    <select />
+  </component>
+  <component name="github-copilot-workspace">
+    <instructionFileLocations>
+      <option value=".github/instructions" />
+    </instructionFileLocations>
+    <promptFileLocations>
+      <option value=".github/prompts" />
+    </promptFileLocations>
+  </component>
+</project>

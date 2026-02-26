@@ -1208,8 +1208,8 @@ function drawHackAlertPopup(vWidth, vHeight, aspect_size) {
     // === XP-style OK button ===
     // Replace the drawXPButton call at the bottom of drawHackAlertPopup:
     const allCorrupted = filesData.every(f => !f.clean);
-    const btnW = 120 / aspect_size;
-    const btnH = 30 / aspect_size;
+    const btnW = 140 / aspect_size;
+    const btnH = 40 / aspect_size;
     const okBtnX = popupX + popupW / 2 - btnW / 2;
     const okBtnY = popupY + popupH - btnH - (12 / aspect_size);
 
@@ -1278,7 +1278,8 @@ function drawXPButton(x, y, w, h, aspect_size, elapsed, label, active = false) {
             hackAlertButtonArea.w,
             hackAlertButtonArea.h
         );
-        canvas.style.cursor = (allCorrupted && hovering) ? "pointer" : "default";
+        const isTouchDevice = window.matchMedia("(pointer: coarse)").matches;
+        canvas.style.cursor = (!isTouchDevice && allCorrupted && hovering) ? "pointer" : "default";
     }
 
     ctx.save();
@@ -1331,7 +1332,7 @@ function drawXPButton(x, y, w, h, aspect_size, elapsed, label, active = false) {
 
     // Label — gray when disabled
     ctx.fillStyle = active ? "#000000" : "#888888";
-    ctx.font = `${Math.round(12 / aspect_size)}px "Tahoma", "Arial", sans-serif`;
+    ctx.font = `${Math.round(13 / aspect_size)}px "Tahoma", "Arial", sans-serif`;
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
     ctx.fillText(label, x + w / 2, y + h / 2);
@@ -3263,11 +3264,15 @@ canvas.addEventListener("click", (e) => {
     if (gamePhase === DESKTOP_PREVIEW_PHASE && hackAlertButtonArea) {
         const allCorrupted = filesData.every(f => !f.clean);
         // console.log(allCorrupted)
-        const clickedInside = mouseIsInside(hackAlertButtonArea.x, hackAlertButtonArea.y,
+        const clickedInside = isInside(mx,my,hackAlertButtonArea.x, hackAlertButtonArea.y,
             hackAlertButtonArea.w, hackAlertButtonArea.h);
 
+        // console.log(hackAlertButtonArea)
+        // console.log(mouseData)
+        // console.log(mx,my)
+
         if (allCorrupted && clickedInside) {
-            // console.log("Click")
+            console.log("Click")
 
             desktopPreviewStartTime = null;
             hackAlertButtonArea = null;
