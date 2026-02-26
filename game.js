@@ -103,7 +103,7 @@ let roundDuration = PASSWORD_ROUND_DURATION
 let timeElapsed = 0
 let gameEnded = false
 
-let gamePhase = INTRO_PHASE // playing | success | retryPrompt | bonusRound | finalGameOver
+let gamePhase = DESKTOP_PREVIEW_PHASE // playing | success | retryPrompt | bonusRound | finalGameOver
 
 let phaseTimer = 0
 
@@ -175,21 +175,23 @@ const info = {
     text: HELP_TEXT[CURRENT_GAME_LANGUAGE]
 }
 const filesData = [
-    {name: "reports", clean: false},
-    {name: "images", clean: false},
-    {name: "videos", clean: false},
-    {name: "music", clean: false},
-    {name: "notes", clean: false},
-    {name: "backups", clean: false},
-    {name: "system32", clean: false},
-    {name: "data", clean: false},
-    {name: "documents", clean: false},
-    {name: "presentations", clean: false},
-    {name: "archives", clean: false}
+    {name: "reports", clean: true},
+    {name: "images", clean: true},
+    {name: "videos", clean: true},
+    {name: "music", clean: true},
+    {name: "notes", clean: true},
+    {name: "backups", clean: true},
+    {name: "system32", clean: true},
+    {name: "data", clean: true},
+    {name: "documents", clean: true},
+    {name: "presentations", clean: true},
+    {name: "archives", clean: true}
 ];
 
 let desktopPreviewStartTime = null;
-const DESKTOP_PREVIEW_DURATION = 1800; // 4 секунди
+const DESKTOP_PREVIEW_DURATION = 450 * 4 // 4 секунди
+const fileDuration = 500;
+
 
 
 /**
@@ -552,6 +554,7 @@ function update() {
 
     if (gamePhase === MINIGAME_INTRO_PHASE) return;
     if (gamePhase === INTRO_PHASE) return;
+    // if (gamePhase === DESKTOP_PREVIEW_PHASE) return;
     if (gamePhase === BONUS_INTRO_PHASE) return;
 
     if (unsafeClicks === MAX_UNSAFE_CLICKS) {
@@ -641,19 +644,6 @@ function addPoints(delta) {
     }
 }
 
-// function drawTotalTimer(vWidth, vHeight, aspect_size) {
-//
-//     const font_size = Math.round(TOTAL_TIMER_FONT_SIZE / aspect_size)
-//
-//     ctx.save()
-//     ctx.font = `bold ${font_size}px monospace`
-//     // Draw the "Time Remaining" text at the bottom
-//     const remaining = Math.max(0, Math.ceil(gameDuration - timeElapsed))
-//     ctx.fillStyle = "#f6f3f3"
-//     ctx.textAlign = "center"
-//     ctx.fillText(`Time left: ${remaining}s`, vWidth / 2, vHeight - 20)
-//     ctx.restore()
-// }
 
 /**
  * Function that draws everything,NOTE: vWidth and vHeight are used AND NOT canvas.width and canvas.height because
@@ -683,11 +673,18 @@ function draw() {
 
     if (gamePhase === DESKTOP_PREVIEW_PHASE) {
         drawDesktop(vWidth, vHeight, aspect_size);
-        drawLanguageToggle(vWidth, vHeight, aspect_size, true);
+        // drawLanguageToggle(vWidth, vHeight, aspect_size, true);
 
         const elapsed = performance.now() - desktopPreviewStartTime;
+        const fileIndex = Math.floor(elapsed / fileDuration);
 
-        if (elapsed >= DESKTOP_PREVIEW_DURATION) {
+        for (let i = 0; i <= fileIndex && i < filesData.length; i++) {
+            filesData[i].clean = false;
+        }
+
+        const totalDuration = (filesData.length + 1) * 1000;
+
+        if (elapsed >= totalDuration) {
             desktopPreviewStartTime = null;
             startTraining();
         }
