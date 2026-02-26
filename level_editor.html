@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Level Editor</title>
+    <style>
+        body { background: #1a1a2e; color: #eee; font-family: monospace; display: flex; flex-direction: column; align-items: center; padding: 16px; }
+        #controls { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 12px; }
+        #controls select, #controls button, #controls input { padding: 6px 10px; border-radius: 4px; border: 1px solid #555; background: #222; color: #eee; cursor: pointer; }
+        #controls button:hover { background: #444; }
+        #palette { display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 12px; }
+        .tile-btn {
+            width: 62px; height: 56px;
+            border: 2px solid transparent; border-radius: 4px;
+            cursor: pointer; display: flex; flex-direction: column;
+            align-items: center; justify-content: center; gap: 1px;
+            padding: 2px;
+        }
+        .tile-btn.active { border-color: #fff; }
+        .tile-num { font-size: 14px; font-weight: bold; color: #fff; line-height: 1; }
+        .tile-desc { font-size: 7px; color: rgba(255,255,230,0.85); line-height: 1.2; text-align: center; display: block; }
+        #canvas-wrap { overflow: auto; max-width: 95vw; max-height: 70vh; border: 1px solid #444; }
+        canvas { display: block; cursor: crosshair; image-rendering: pixelated; }
+        #output { margin-top: 12px; width: 95vw; height: 200px; background: #111; color: #0f0; border: 1px solid #444; padding: 8px; overflow: auto; white-space: pre; font-size: 12px; }
+        #grid-controls { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+        #grid-controls label { font-size: 13px; }
+        #grid-controls input[type=number] { width: 60px; }
+    </style>
+</head>
+<body>
+<h2 style="margin:0 0 10px">🎮 Level Editor</h2>
+
+<div id="controls">
+    <select id="levelSelect"></select>
+    <button onclick="loadSelectedLevel()">Load Level</button>
+    <button onclick="newLevel()">New Level</button>
+    <button onclick="exportLevel()">Export</button>
+    <button onclick="copyOutput()">Copy Output</button>
+</div>
+
+<div id="grid-controls">
+    <label>Cols: <input type="number" id="gridCols" value="20" min="5" max="100"></label>
+    <label>Rows: <input type="number" id="gridRows" value="15" min="5" max="100"></label>
+    <button onclick="resizeGrid()">Resize (New Level)</button>
+    <label>Tile px: <input type="number" id="tileSize" value="28" min="10" max="64" onchange="render()"></label>
+</div>
+
+<div id="palette"></div>
+<div id="canvas-wrap"><canvas id="canvas"></canvas></div>
+<div id="output">// Click "Export" or "Copy Output" to get the level array</div>
+
+<script>
+    // ── Paste your actual levels here ────────────────────────────────────────
+    const Minigame_levels = {
+        level_example: [
+            [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
+            [2,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,2],
+            [2,1,2,2,2,2,2,2,2,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,2,2,2,2,2,2,1,2],
+            [2,1,2,1,1,1,1,1,2,1,2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2,1,2,1,1,1,1,1,2,2],
+            [2,1,2,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,1,1,2,1,1,1,2,2,1,1,1,1,1,1,2,1,2,2,2,1,2,2],
+            [2,1,2,1,1,1,1,1,2,1,1,1,1,1,1,1,1,1,2,1,2,1,1,1,1,1,1,1,1,1,2,1,2,1,2,1,2,1,2,2],
+            [2,1,2,1,1,1,1,1,2,1,2,3,4,5,6,7,8,9,2,1,2,1,1,1,1,1,1,1,1,1,2,1,2,1,2,2,2,1,2,2],
+            [2,1,2,9,9,9,9,9,2,1,2,1,2,9,9,9,9,9,2,1,2,1,1,1,1,1,1,1,1,1,2,1,2,1,1,1,1,1,2,2],
+            [2,1,2,2,2,2,2,2,2,1,2,9,2,2,2,2,2,2,2,9,2,1,1,1,1,1,1,1,1,1,2,1,2,2,2,2,2,2,1,2],
+            [2,1,1,1,1,1,1,1,1,1,2,9,9,9,9,9,9,9,9,9,2,1,1,1,1,1,1,1,1,1,2,1,1,1,1,1,1,1,1,2],
+            [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,2],
+            [2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2],
+            [2,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
+            [2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2],
+            [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,2],
+            [2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2],
+            [2,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2],
+            [2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2],
+            [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,2],
+            [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,6,6,2],
+            [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,1,2],
+            [2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,2,1,1,2],
+            [2,2,2,1,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,7,1,2],
+            [2,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,2],
+            [2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2]
+        ],
+    };
+    // ─────────────────────────────────────────────────────────────────────────
+
+    const TILES = {
+        0:  { color: '#5a4a3a', desc: 'pass-thru\n(unlocked)' },
+        1:  { color: '#1a1a2e', desc: 'background' },
+        2:  { color: '#3a3a6a', desc: 'wall\n(solid)' },
+        3:  { color: '#1a5a9a', desc: 'water\n(low grav)' },
+        4:  { color: '#3a6a1a', desc: 'air jump\n(not solid)' },
+        5:  { color: '#cc7700', desc: 'bounce\n(trampoline)' },
+        6:  { color: '#444444', desc: 'no bounce\n(no ricochet)' },
+        7:  { color: '#cc5500', desc: 'change\ncolor' },
+        8:  { color: '#1a8a1a', desc: 'next level' },
+        9:  { color: '#aa1a1a', desc: 'death' },
+        10: { color: '#5a3a8a', desc: 'locked\n(→0 on unlock)' },
+        11: { color: '#aa1aaa', desc: 'unlock\n(opens id 10)' },
+    };
+
+    let grid = [];
+    let selectedTile = 2;
+    let isMouseDown = false;
+
+    const canvas = document.getElementById('canvas');
+    const ctx = canvas.getContext('2d');
+
+    // Build palette
+    const palette = document.getElementById('palette');
+    Object.entries(TILES).forEach(([val, info]) => {
+        const btn = document.createElement('div');
+        btn.className = 'tile-btn' + (Number(val) === selectedTile ? ' active' : '');
+        btn.style.background = info.color;
+        btn.title = `Tile ${val}: ${info.desc.replace(/\n/g, ' ')}`;
+
+        const numSpan = document.createElement('span');
+        numSpan.className = 'tile-num';
+        numSpan.textContent = val;
+        btn.appendChild(numSpan);
+
+        // Split desc on \n and create a span per line
+        info.desc.split('\n').forEach(line => {
+            const lineSpan = document.createElement('span');
+            lineSpan.className = 'tile-desc';
+            lineSpan.textContent = line;
+            btn.appendChild(lineSpan);
+        });
+
+        btn.onclick = () => {
+            selectedTile = Number(val);
+            document.querySelectorAll('.tile-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        };
+        palette.appendChild(btn);
+    });
+
+    // Erase button (sets tile to 1 = background)
+    const eraseBtn = document.createElement('div');
+    eraseBtn.className = 'tile-btn';
+    eraseBtn.style.background = '#555';
+    eraseBtn.title = 'Erase (set to 1 = background)';
+
+    const eraseNum = document.createElement('span');
+    eraseNum.className = 'tile-num';
+    eraseNum.textContent = '✕';
+    eraseBtn.appendChild(eraseNum);
+
+    const eraseDesc = document.createElement('span');
+    eraseDesc.className = 'tile-desc';
+    eraseDesc.textContent = 'erase';
+    eraseBtn.appendChild(eraseDesc);
+
+    eraseBtn.onclick = () => {
+        selectedTile = 1;
+        document.querySelectorAll('.tile-btn').forEach(b => b.classList.remove('active'));
+        eraseBtn.classList.add('active');
+    };
+    palette.appendChild(eraseBtn);
+
+    // Populate level selector
+    const sel = document.getElementById('levelSelect');
+    Object.keys(Minigame_levels).forEach(name => {
+        const opt = document.createElement('option');
+        opt.value = name;
+        opt.textContent = name;
+        sel.appendChild(opt);
+    });
+
+    window.loadSelectedLevel = function () {
+        const name = sel.value;
+        const raw = Minigame_levels[name];
+        grid = raw.map(row => [...row]);
+        render();
+    };
+
+    window.newLevel = function () {
+        resizeGrid();
+    };
+
+    window.resizeGrid = function () {
+        const cols = parseInt(document.getElementById('gridCols').value);
+        const rows = parseInt(document.getElementById('gridRows').value);
+        grid = Array.from({ length: rows }, (_, r) =>
+            Array.from({ length: cols }, (_, c) =>
+                (r === 0 || r === rows - 1 || c === 0 || c === cols - 1) ? 2 : 1
+            )
+        );
+        render();
+    };
+
+    function tileSize() {
+        return parseInt(document.getElementById('tileSize').value) || 28;
+    }
+
+    function render() {
+        if (!grid.length) return;
+        const rows = grid.length;
+        const cols = Math.max(...grid.map(r => r.length));
+        const ts = tileSize();
+        canvas.width = cols * ts;
+        canvas.height = rows * ts;
+
+        for (let r = 0; r < rows; r++) {
+            for (let c = 0; c < (grid[r]?.length ?? 0); c++) {
+                const val = grid[r][c];
+                const info = TILES[val] ?? { color: '#ff00ff', desc: '?' };
+
+                // Background fill
+                ctx.fillStyle = info.color;
+                ctx.fillRect(c * ts, r * ts, ts, ts);
+
+                // Grid line
+                ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+                ctx.strokeRect(c * ts, r * ts, ts, ts);
+
+                if (ts >= 20) {
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+
+                    // Tile number (top area)
+                    ctx.fillStyle = 'rgba(255,255,255,0.95)';
+                    ctx.font = `bold ${Math.max(9, ts / 3)}px monospace`;
+                    ctx.fillText(String(val), c * ts + ts / 2, r * ts + ts * 0.32);
+
+                    // Desc lines (bottom area, only when tiles are large enough)
+                    if (ts >= 32 && info.desc) {
+                        const lines = info.desc.split('\n');
+                        ctx.font = `${Math.max(6, ts / 6)}px monospace`;
+                        ctx.fillStyle = 'rgba(255,255,200,0.8)';
+                        if (lines.length === 1) {
+                            ctx.fillText(lines[0], c * ts + ts / 2, r * ts + ts * 0.72);
+                        } else {
+                            ctx.fillText(lines[0], c * ts + ts / 2, r * ts + ts * 0.65);
+                            ctx.fillText(lines[1], c * ts + ts / 2, r * ts + ts * 0.82);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    function getCellFromEvent(e) {
+        const rect = canvas.getBoundingClientRect();
+        const ts = tileSize();
+        const col = Math.floor((e.clientX - rect.left) / ts);
+        const row = Math.floor((e.clientY - rect.top) / ts);
+        return { row, col };
+    }
+
+    function paintCell(e) {
+        const { row, col } = getCellFromEvent(e);
+        if (row < 0 || row >= grid.length) return;
+        if (col < 0 || !grid[row] || col >= grid[row].length) return;
+        grid[row][col] = selectedTile;
+        render();
+    }
+
+    canvas.addEventListener('mousedown', e => { isMouseDown = true; paintCell(e); });
+    canvas.addEventListener('mousemove', e => { if (isMouseDown) paintCell(e); });
+    canvas.addEventListener('mouseup', () => isMouseDown = false);
+    canvas.addEventListener('mouseleave', () => isMouseDown = false);
+
+    window.exportLevel = function () {
+        const out = gridToString();
+        document.getElementById('output').textContent = out;
+        console.log(out);
+    };
+
+    window.copyOutput = function () {
+        const out = gridToString();
+        navigator.clipboard.writeText(out).then(() => alert('Copied!'));
+    };
+
+    function gridToString() {
+        const rows = grid.map(row => '        [' + row.join(',') + ']');
+        return `level_NEW: [\n${rows.join(',\n')}\n    ],`;
+    }
+
+    if (Object.keys(Minigame_levels).length > 0) {
+        loadSelectedLevel();
+    } else {
+        resizeGrid();
+    }
+</script>
+</body>
+</html>
