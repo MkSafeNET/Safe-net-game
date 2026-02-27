@@ -1193,7 +1193,8 @@ function drawHackAlertPopup(vWidth, vHeight, aspect_size) {
         },
     ];
 
-    ctx.font = `${Math.round(13 / aspect_size)}px "Courier New", monospace`;
+    ctx.font = `bold ${Math.round(13 / aspect_size)}px "Arial", sans-serif`;
+    // ctx.font = `${Math.round(13 / aspect_size)}px "Courier New", monospace`;
     ctx.textAlign = "left";
     ctx.textBaseline = "top";
 
@@ -2914,7 +2915,7 @@ function drawIntroScreen(vWidth, vHeight, aspect_size) {
 
     // Small hint
     ctx.fillStyle = "#717d8c";
-    ctx.font = `${Math.round(14 / aspect_size)}px monospace`;
+    ctx.font = `${Math.round(16 / aspect_size)}px monospace`;
     ctx.fillText(UI_TEXT.INTRO_PHASE_BUTTON_LABEL_TEXT[CURRENT_GAME_LANGUAGE], vWidth / 2, y - (15 / aspect_size));
 }
 

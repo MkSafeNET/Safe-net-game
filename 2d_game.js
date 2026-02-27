@@ -1148,7 +1148,7 @@ export function Game2D(endGameFunc) {
         // DESCRIPTION — slightly lighter slate
         ctx.fillStyle = "rgba(15, 23, 42, 0.85)";
         ctx.shadowBlur = 0;
-        ctx.font = `${Math.round(20 / aspect_size)}px monospace`;
+        ctx.font = `${Math.round(18 / aspect_size)}px monospace`;
         ctx.fillText(UI_TEXT.FILES_SCREEN_DESCRIPTION[CURRENT_GAME_LANGUAGE], w / 2, h * startTextDescriptionY);
 
         ctx.shadowBlur = 0;

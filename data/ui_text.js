@@ -93,7 +93,7 @@ UI_TEXT.FILES_SCREEN_TITLE[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = "ПРЕГЛЕД
 UI_TEXT.FILES_SCREEN_TITLE[GAME_LANGUAGES.ENGLISH_LANGUAGE] = "FILE OVERVIEW"
 UI_TEXT.FILES_SCREEN_TITLE[GAME_LANGUAGES.ALBANIAN_LANGUAGE] = "ANALIZA E SKEDARËVE"
 
-UI_TEXT.FILES_SCREEN_DESCRIPTION[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = "Помогни му на антивирусниот херој да го пронајде вирусот во оштетените датотеки"
+UI_TEXT.FILES_SCREEN_DESCRIPTION[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = "Помогни му на антивирусот да го пронајде вирусот во оштетените датотеки"
 UI_TEXT.FILES_SCREEN_DESCRIPTION[GAME_LANGUAGES.ENGLISH_LANGUAGE] = "Help the antivirus hero find the virus in the corrupted files"
 UI_TEXT.FILES_SCREEN_DESCRIPTION[GAME_LANGUAGES.ALBANIAN_LANGUAGE] = "Ndihmo heroin antivirus të gjejë virusin në skedarët e dëmtuar"
 
@@ -176,8 +176,8 @@ UI_TEXT.MINIGAME_REASON_BONUS_PERFECT_LINE_1[GAME_LANGUAGES.ENGLISH_LANGUAGE] = 
 UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_1[GAME_LANGUAGES.ENGLISH_LANGUAGE] = "The hero is ready to fight the virus. Help them find it.";
 
 UI_TEXT.MINIGAME_REASON_LINE_2[GAME_LANGUAGES.ENGLISH_LANGUAGE] = "Press the deploy button.";
-UI_TEXT.MINIGAME_REASON_BONUS_PERFECT_LINE_2[GAME_LANGUAGES.ENGLISH_LANGUAGE] = "Your task is to guide it through the data in several files, avoiding the damaged data. \nUse the color map for easier navigation:\n🟥 Damaged data    ⬛ Lifter    🟪 Jump-tile    🟦 Unlock path    🟨 Virus";
-UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_2[GAME_LANGUAGES.ENGLISH_LANGUAGE] = "Your task is to guide it through the data in several files, avoiding the damaged data. \nUse the color map for easier navigation:\n🟥 Damaged data    ⬛ Lifter    🟪 Jump-tile    🟦 Unlock path    🟨 Virus";
+UI_TEXT.MINIGAME_REASON_BONUS_PERFECT_LINE_2[GAME_LANGUAGES.ENGLISH_LANGUAGE] = "Your task is to guide it through the data in several files, avoiding\nthe damaged data. Use the color map for easier navigation:\n🟥 Damaged data  ⬛ Lifter    🟪 Jump-tile  🟦 Unlock path  🟨 Virus";
+UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_2[GAME_LANGUAGES.ENGLISH_LANGUAGE] = "Your task is to guide it through the data in several files, avoiding\nthe damaged data. Use the color map for easier navigation:\n🟥 Damaged data  ⬛ Lifter    🟪 Jump-tile  🟦 Unlock path  🟨 Virus";
 
 UI_TEXT.MINIGAME_REASON_BUTTON_TEXT[GAME_LANGUAGES.ENGLISH_LANGUAGE] = "START";
 
@@ -191,9 +191,9 @@ UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_1[GAME_LANGUAGES.MACEDONIAN_LANGU
 
 UI_TEXT.MINIGAME_REASON_LINE_2[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = "Притисни го копчето за распоредување.";
 
-UI_TEXT.MINIGAME_REASON_BONUS_PERFECT_LINE_2[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = "Треба да го водиш низ податоците на неколку датотеки, избегнувајќи ги оштетените податоци. \nКористи ја мапата на бои за полесно пребарување:\n 🟥 оштетен податок    ⬛ воздигнувач    🟪 скок-плочка    🟦 отклучи патека     🟨 вирус";
+UI_TEXT.MINIGAME_REASON_BONUS_PERFECT_LINE_2[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = "Треба да го водиш низ податоците на неколку датотеки, избегнувајќи ги\nоштетените податоци. Користи ја мапата на бои за полесно пребарување:\n🟥 оштетен податок  ⬛ воздигнувач  🟪 скок-плочка  🟦 отклучи патека  🟨 вирус";
 
-UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_2[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = "Треба да го водиш низ податоците на неколку датотеки, избегнувајќи ги оштетените податоци. \nКористи ја мапата на бои за полесно пребарување:\n 🟥 оштетен податок    ⬛ воздигнувач    🟪 скок-плочка    🟦 отклучи патека     🟨 вирус";
+UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_2[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = "Треба да го водиш низ податоците на неколку датотеки, избегнувајќи ги\nоштетените податоци. Користи ја мапата на бои за полесно пребарување:\n🟥 оштетен податок  ⬛ воздигнувач  🟪 скок-плочка  🟦 отклучи патека  🟨 вирус";
 
 UI_TEXT.MINIGAME_REASON_BUTTON_TEXT[GAME_LANGUAGES.MACEDONIAN_LANGUAGE] = "ЗАПОЧНИ";
 
@@ -208,8 +208,8 @@ UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_1[GAME_LANGUAGES.ALBANIAN_LANGUAG
 
 UI_TEXT.MINIGAME_REASON_LINE_2[GAME_LANGUAGES.ALBANIAN_LANGUAGE] = "Shtyp butonin për shpërndarje.";
 
-UI_TEXT.MINIGAME_REASON_BONUS_PERFECT_LINE_2[GAME_LANGUAGES.ALBANIAN_LANGUAGE] = "Duhet të kalosh nëpër të dhënat e disa skedarëve, duke shmangur të dhënat e dëmtuara. \nPërdor hartën e ngjyrave për të lehtësuar kërkimin:\n 🟥 të dhëna të dëmtuara    ⬛ Ngritës    🟪 Bllok-skok    🟦 Shkruaj rrugën    🟨 Virusi";
-UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_2[GAME_LANGUAGES.ALBANIAN_LANGUAGE] = "Duhet të kalosh nëpër të dhënat e disa skedarëve, duke shmangur të dhënat e dëmtuara. \nPërdor hartën e ngjyrave për të lehtësuar kërkimin:\n 🟥 të dhëna të dëmtuara    ⬛ Ngritës    🟪 Bllok-skok    🟦 Shkruaj rrugën    🟨 Virusi";
+UI_TEXT.MINIGAME_REASON_BONUS_PERFECT_LINE_2[GAME_LANGUAGES.ALBANIAN_LANGUAGE] = "Duhet të kalosh nëpër të dhënat e disa skedarëve, duke shmangur të dhënat e dëmtuara. \nPërdor hartën e ngjyrave për të lehtësuar kërkimin:\n🟥 të dhëna të dëmtuara  ⬛ Ngritës  🟪 Bllok-skok  🟦 Shkruaj rrugën  🟨 Virusi";
+UI_TEXT.MINIGAME_REASON_TRAINING_COMPLETE_LINE_2[GAME_LANGUAGES.ALBANIAN_LANGUAGE] = "Duhet të kalosh nëpër të dhënat e disa skedarëve, duke shmangur të dhënat e dëmtuara. \nPërdor hartën e ngjyrave për të lehtësuar kërkimin:\n🟥 të dhëna të dëmtuara  ⬛ Ngritës  🟪 Bllok-skok  🟦 Shkruaj rrugën  🟨 Virusi";
 
 
 UI_TEXT.MINIGAME_REASON_BUTTON_TEXT[GAME_LANGUAGES.ALBANIAN_LANGUAGE] = "FILLON";
